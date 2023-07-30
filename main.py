@@ -15,6 +15,8 @@ user_login = False
 config(title="PyFlora Plant Monitor", theme="dark")
 
 img = open('images/logo2.png', 'rb').read()
+
+
 # sys.setrecursionlimit(10000)
 
 def login_form():
@@ -62,26 +64,30 @@ def body(body_function):
     # with use_scope('main', clear=True):
     #     return body_function()
 
+
 def main_buttons_callback(btn):
-    if btn == 'Main Menu':
-        body(graf)
-    elif btn == 'Logout':
-        body(logout)
+    if btn == 'Pots':
+        body(pots)
+    elif btn == 'Plants':
+        body(plants)
+    elif btn == 'My Profile':
+        body(my_profile)
     elif btn == 'Admin Panel':
         body(admin_panel)
+    elif btn == 'Logout':
+        body(logout)
+
 
 def header():
     with use_scope('header', clear=True):
         put_image(img, format="png").style("align-self: center;")
         if admin_login:
-            put_buttons(['Main Menu', 'Admin Panel','Logout'], onclick=lambda btn: main_buttons_callback(btn)).style(
+            put_buttons(['Pots', 'Plants', 'My Profile', 'Admin Panel', 'Logout'],
+                        onclick=lambda btn: main_buttons_callback(btn)).style(
                 "text-align: right; align-self: center;")
         if user_login:
-            # put_button("Main Menu", onclick=lambda: body(graf), color='success', outline=True).style(
-            #     "text-align: right; align-self: center;")
-            # put_button("Logout", onclick=lambda: body(logout), color='success', outline=True).style(
-            #     "text-align: right; align-self: center;")
-            put_buttons(['Main Menu', 'Logout'], onclick=lambda btn: main_buttons_callback(btn)).style(
+            put_buttons(['Pots', 'Plants', 'My Profile', 'Logout'],
+                        onclick=lambda btn: main_buttons_callback(btn)).style(
                 "text-align: right; align-self: center;")
 
 
@@ -93,6 +99,18 @@ def footer():
 
 def admin_panel():
     put_text("admin panel content")
+
+
+def pots():
+    put_text("pots content")
+
+
+def plants():
+    put_text("plants content")
+
+
+def my_profile():
+    put_text("my_profile content")
 
 
 def graf():
