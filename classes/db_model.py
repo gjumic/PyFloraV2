@@ -56,6 +56,7 @@ class Pot(Base):
     soil_sal = db.Column("soil_sal", db.Float, nullable=False, unique=False)
 
 class Login_User():
+
     def __init__(self, username, password, login_status):
         self.username = username
         self.password = password
@@ -66,7 +67,6 @@ class Login_User():
         if user is not None and hashlib.md5(self.password.encode('utf-8')).hexdigest() == user.password:
             if user.username == "admin":
                 self.login_status = "admin"
+                return
             else:
                 self.login_status = "user"
-        else:
-            self.login_status = False
