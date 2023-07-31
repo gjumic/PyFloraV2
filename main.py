@@ -52,8 +52,9 @@ def logout():
 
 def body(body_function, *args, **kwargs):
     clear(scope='header')
-    header()
     clear(scope='main')
+    clear(scope='footer')
+    header()
     try:
         with use_scope('main'):
             return body_function(*args, **kwargs)
