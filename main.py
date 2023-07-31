@@ -73,6 +73,17 @@ def main_buttons_callback(btn):
         body(logout)
 
 
+def users_buttons_callback(btn, user_id):
+    if btn == 'Delete':
+        print('Delete ' + str(user_id))
+        if user_id == 1:
+            toast('Cannot Delete Admin User! 🔔')
+        else:
+            a = Delete_User(user_id)
+            a.delete_user()
+        body(admin_panel)
+
+
 def plants_buttons_callback(btn, plant_id, plant_name):
     if btn == 'Delete ' + plant_name:
         print('Delete ' + plant_name)
@@ -103,11 +114,36 @@ def footer():
 
 
 def admin_panel():
-    put_text("admin panel content")
+    users = session.query(User).all()
+    put_row([
+        put_column([
+            put_row([
+                put_code('Username'), None,  # None represents the space between the output
+                put_code('First Name'), None,
+                put_code('Last Name'), None,
+                put_code('Actions'),
+            ]),
+        ]), None,
+    ])
+    for user in users:
+        put_row([
+            put_column([
+                put_row([
+                    put_code(user.username), None,  # None represents the space between the output
+                    put_code(user.first_name), None,
+                    put_code(user.last_name), None,
+                    put_buttons(['Edit', 'Delete'],
+                                onclick=lambda btn, user_id=user.id: users_buttons_callback(btn,
+                                                                                            user_id)).style(
+                        "text-align: right; align-self: center;")
+                ]),
+            ]), None,
+        ])
 
 
 def pots():
     put_text("pots content")
+
 
 def edit_plant(id):
     clear(scope='header')
@@ -129,9 +165,13 @@ def edit_plant(id):
         input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max, type=FLOAT),
 
     ])
-    a = Update_Plant(plant.id, plant_input['name'], plant_input['description'], plant_input['temp_min'], plant_input['temp_max'], plant_input['light_min'], plant_input['light_max'], plant_input['hum_min'], plant_input['hum_max'], plant_input['ph_min'], plant_input['ph_max'], plant_input['sal_min'], plant_input['sal_max'])
+    a = Update_Plant(plant.id, plant_input['name'], plant_input['description'], plant_input['temp_min'],
+                     plant_input['temp_max'], plant_input['light_min'], plant_input['light_max'],
+                     plant_input['hum_min'], plant_input['hum_max'], plant_input['ph_min'], plant_input['ph_max'],
+                     plant_input['sal_min'], plant_input['sal_max'])
     a.update_plant()
     body(plants, plant.id)
+
 
 def plants(id=None):
     if id == None:

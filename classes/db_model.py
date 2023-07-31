@@ -77,6 +77,15 @@ class Login_User():
             else:
                 self.login_status = "user"
 
+class Delete_User():
+
+    def __init__(self, id):
+        self.id = id
+
+    def delete_user(self):
+        print("Delete User with id: " + str(self.id))
+        session.query(User).filter(User.id == self.id).delete()
+        session.commit()
 
 class Delete_Plant():
 
