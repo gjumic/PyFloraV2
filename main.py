@@ -17,8 +17,6 @@ config(title="PyFlora Plant Monitor", theme="dark")
 img = open('images/logo2.png', 'rb').read()
 
 
-# sys.setrecursionlimit(10000)
-
 def login_form():
     global admin_login
     global user_login
@@ -45,8 +43,6 @@ def logout():
     global user_login
     admin_login = False
     user_login = False
-    clear(scope='main')
-    clear(scope='footer')
     body(login_form)
 
 
@@ -102,7 +98,6 @@ def header():
 
 
 def footer():
-    # remove(scope='footer')
     with use_scope('footer', clear=True):
         put_text("Made by Goran Jumić")
 
@@ -115,6 +110,7 @@ def pots():
     put_text("pots content")
 
 def edit_plant(id):
+    clear(scope='header')
     plant = session.query(Plant).filter(Plant.id == id).one_or_none()
     # img = open('images/plants/' + plant.image, 'rb').read()
     plant_input = input_group("Add or Edit Plant", [

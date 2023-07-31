@@ -4,6 +4,11 @@ from database.Database import *
 from database.MySetup import Base
 from sqlalchemy import ForeignKey
 
+class Config(Base):
+    __tablename__ = "config"
+
+    id = db.Column("id", db.Integer, primary_key=True)
+    city = db.Column("city", db.String, nullable=False, unique=True)
 
 class User(Base):
     __tablename__ = "users"
@@ -13,7 +18,6 @@ class User(Base):
     password = db.Column("password", db.String, nullable=False, unique=False)
     first_name = db.Column("first_name", db.String, nullable=True, unique=False)
     last_name = db.Column("last_name", db.String, nullable=True, unique=False)
-    city = db.Column("city", db.String, nullable=False, unique=False)
     active = db.Column("active", db.Boolean)
 
 

@@ -6,10 +6,15 @@ from database.Database import *
 
 database.MySetup.Base.metadata.create_all(bind=db_engine)
 
+city = "Osijek"
+
+new_config = db_model.Config(city=city)
+session.add(new_config)
+
 user_data = [
-    ("admin", hashlib.md5("2241".encode('utf-8')).hexdigest(), "", "", "Osijek", True),
-    ("goran", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Goran", "Jumic", "Osijek", True),
-    ("pero", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Pero", "", "Zagreb", False),
+    ("admin", hashlib.md5("2241".encode('utf-8')).hexdigest(), "", "", True),
+    ("goran", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Goran", "Jumic", True),
+    ("pero", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Pero", "", False),
 ]
 
 plant_data = [
@@ -39,8 +44,8 @@ pot_data = [
 ]
 
 for record in user_data:
-    username, password, first_name, last_name, city, active = record
-    new_user = db_model.User(username=username, password=password, first_name=first_name, last_name=last_name, city=city, active=active)
+    username, password, first_name, last_name, active = record
+    new_user = db_model.User(username=username, password=password, first_name=first_name, last_name=last_name, active=active)
     session.add(new_user)
 
 for record in plant_data:
