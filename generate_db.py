@@ -13,16 +13,16 @@ user_data = [
 ]
 
 plant_data = [
-    ("Rose", "Beautiful red flowers", "rose.jpg", 10, 30, 1000, 8000, 0.2, 0.8, 5.5, 7.0, 0.1, 0.5),
-    ("Lavender", "Fragrant purple flowers", "lavender.jpg", 5, 25, 800, 6000, 0.2, 1.0, 6.0, 7.5, 0.1, 0.6),
-    ("Snake Plant", "Tall green leaves", "snake_plant.jpeg", 15, 35, 500, 4000, 0.3, 1.0, 5.5, 7.5, 0.1, 0.7),
-    ("Fern", "Lush green foliage", "fern.jpg", 18, 25, 800, 3000, 0.4, 1.2, 5.0, 6.5, 0.1, 0.6),
-    ("Cactus", "Spiny desert plant", "cactus.jpg", 20, 40, 1000, 12000, 0.1, 0.7, 6.5, 8.0, 0.1, 0.8),
-    ("Orchid", "Elegant and delicate flowers", "orchid.jpg", 18, 30, 1500, 8000, 0.3, 0.8, 5.5, 6.5, 0.1, 0.7),
-    ("Spider Plant", "Green and white striped leaves", "spider_plant.jpg", 15, 28, 500, 4000, 0.2, 0.9, 5.8, 7.2, 0.1, 0.6),
-    ("Bamboo", "Fast-growing tall plant", "bamboo.jpg", 20, 35, 800, 5000, 0.2, 0.9, 6.0, 7.5, 0.1, 0.7),
-    ("Succulent", "Water-storing fleshy leaves", "succulent.jpg", 15, 30, 500, 6000, 0.1, 0.6, 6.0, 7.5, 0.1, 0.7),
-    ("Aloe Vera", "Soothing gel-filled leaves", "aloe_vera.jpg", 20, 35, 500, 4000, 0.2, 0.8, 5.5, 7.0, 0.1, 0.6),
+    ("Rose", "Beautiful red flowers", "rose.jpg", 10, 30, 1000, 8000, 20, 80, 5.5, 7.0, 0.1, 0.5),
+    ("Lavender", "Fragrant purple flowers", "lavender.jpg", 5, 25, 800, 6000, 20, 100, 6.0, 7.5, 0.1, 0.6),
+    ("Snake Plant", "Tall green leaves", "snake_plant.jpeg", 15, 35, 500, 4000, 30, 100, 5.5, 7.5, 0.1, 0.7),
+    ("Fern", "Lush green foliage", "fern.jpg", 18, 25, 800, 3000, 40, 10, 5.0, 6.5, 0.1, 0.6),
+    ("Cactus", "Spiny desert plant", "cactus.jpg", 20, 40, 1000, 12000, 10, 70, 6.5, 8.0, 0.1, 0.8),
+    ("Orchid", "Elegant and delicate flowers", "orchid.jpg", 18, 30, 1500, 8000, 30, 80, 5.5, 6.5, 0.1, 0.7),
+    ("Spider Plant", "Green and white striped leaves", "spider_plant.jpg", 15, 28, 500, 4000, 20, 90, 5.8, 7.2, 0.1, 0.6),
+    ("Bamboo", "Fast-growing tall plant", "bamboo.jpg", 20, 35, 800, 5000, 20, 90, 6.0, 7.5, 0.1, 0.7),
+    ("Succulent", "Water-storing fleshy leaves", "succulent.jpg", 15, 30, 500, 6000, 10, 60, 6.0, 7.5, 0.1, 0.7),
+    ("Aloe Vera", "Soothing gel-filled leaves", "aloe_vera.jpg", 20, 35, 500, 4000, 20, 80, 5.5, 7.0, 0.1, 0.6),
 ]
 
 pot_data = [

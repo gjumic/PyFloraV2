@@ -114,12 +114,33 @@ def pots():
     put_text("pots content")
 
 def edit_plant(id):
-    put_text("edit_plant content")
     plant = session.query(Plant).filter(Plant.id == id).one_or_none()
-    print(plant.name)
+    # img = open('images/plants/' + plant.image, 'rb').read()
+    plant_input = input_group("Add or Edit Plant", [
+        input('Name', name='name', value=plant.name),
+        input('Description', name='description', value=plant.description),
 
-def plants():
-    plants = session.query(Plant).all()
+        input('Minimum Temperature - \u00b0C', name='temp_min', value=plant.temperature_min, type=NUMBER),
+        input('Maximum Temperature - \u00b0C', name='temp_max', value=plant.temperature_max, type=NUMBER),
+        input('Minimum Light - lx', name='light_min', value=plant.light_min, type=NUMBER),
+        input('Maximum Light - lx', name='light_max', value=plant.light_max, type=NUMBER),
+        input('Minimum Humidity - %', name='hum_min', value=plant.soil_humidity_min, type=NUMBER),
+        input('Maximum Humidity - %', name='hum_max', value=plant.soil_humidity_max, type=NUMBER),
+        input('Minimum pH', name='ph_min', value=plant.soil_ph_min, type=FLOAT),
+        input('Maximum pH', name='ph_max', value=plant.soil_ph_max, type=FLOAT),
+        input('Salinity - dS/m', name='sal_min', value=plant.soil_salinity_min, type=FLOAT),
+        input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max, type=FLOAT),
+
+    ])
+    a = Update_Plant(plant.id, plant_input['name'], plant_input['description'], plant_input['temp_min'], plant_input['temp_max'], plant_input['light_min'], plant_input['light_max'], plant_input['hum_min'], plant_input['hum_max'], plant_input['ph_min'], plant_input['ph_max'], plant_input['sal_min'], plant_input['sal_max'])
+    a.update_plant()
+    body(plants, plant.id)
+
+def plants(id=None):
+    if id == None:
+        plants = session.query(Plant).all()
+    else:
+        plants = session.query(Plant).filter(Plant.id == id)
     for plant in plants:
         img = open('images/plants/' + plant.image, 'rb').read()
         put_row([
@@ -157,7 +178,9 @@ def plants():
 
                 ]),
                 put_buttons(['Edit ' + plant.name, 'Delete ' + plant.name],
-                            onclick=lambda btn, plant_id=plant.id, plant_name=plant.name: plants_buttons_callback(btn, plant_id, plant_name)).style(
+                            onclick=lambda btn, plant_id=plant.id, plant_name=plant.name: plants_buttons_callback(btn,
+                                                                                                                  plant_id,
+                                                                                                                  plant_name)).style(
                     "text-align: right; align-self: center;")
             ]), None,
         ])
