@@ -23,8 +23,8 @@ def login_form():
     global admin_login
     global user_login
     login_input = input_group("Login", [
-        input('Username', name='username'),
-        input('Password', type="password", name='password')])
+        input('Username', name='username', value="admin"),
+        input('Password', type="password", name='password', value="2241")])
     a = Login_User(login_input['username'], login_input['password'], False)
     a.login()
     if a.login_status == "admin":
@@ -50,19 +50,17 @@ def logout():
     body(login_form)
 
 
-def body(body_function):
+def body(body_function, *args, **kwargs):
     clear(scope='header')
     header()
     clear(scope='main')
     try:
         with use_scope('main'):
-            return body_function()
+            return body_function(*args, **kwargs)
     except Exception as e:
         print(e)
     finally:
         footer()
-    # with use_scope('main', clear=True):
-    #     return body_function()
 
 
 def main_buttons_callback(btn):
@@ -76,6 +74,17 @@ def main_buttons_callback(btn):
         body(admin_panel)
     elif btn == 'Logout':
         body(logout)
+
+
+def plants_buttons_callback(btn, plant_id, plant_name):
+    if btn == 'Delete ' + plant_name:
+        print('Delete ' + plant_name)
+        a = Delete_Plant(plant_id)
+        a.delete_plant()
+        body(plants)
+    if btn == 'Edit ' + plant_name:
+        print('Edit ' + plant_name)
+        body(edit_plant, plant_id)
 
 
 def header():
@@ -104,9 +113,54 @@ def admin_panel():
 def pots():
     put_text("pots content")
 
+def edit_plant(id):
+    put_text("edit_plant content")
+    plant = session.query(Plant).filter(Plant.id == id).one_or_none()
+    print(plant.name)
 
 def plants():
-    put_text("plants content")
+    plants = session.query(Plant).all()
+    for plant in plants:
+        img = open('images/plants/' + plant.image, 'rb').read()
+        put_row([
+            put_column([
+                put_code(plant.name),
+                put_code(plant.description),
+            ]), None,
+            put_image(img, format="png").style("align-self: center;"),
+        ])
+        put_row([
+            put_column([
+                put_row([
+                    put_code('Temp min: ' + str(plant.temperature_min) + " \u00b0C"), None,
+                    put_code('Temp max: ' + str(plant.temperature_max) + " \u00b0C"),
+
+                ]),
+                put_row([
+                    put_code('Light min: ' + str(plant.light_min) + " lx"), None,
+                    put_code('Light max: ' + str(plant.light_max) + " lx"),
+
+                ]),
+                put_row([
+                    put_code('Humidity min: ' + str(plant.soil_humidity_min) + " %"), None,
+                    put_code('Humidity max: ' + str(plant.soil_humidity_max) + " %"),
+
+                ]),
+                put_row([
+                    put_code('pH min: ' + str(plant.soil_ph_min)), None,
+                    put_code('ph max: ' + str(plant.soil_ph_max)),
+
+                ]),
+                put_row([
+                    put_code('Salinity min: ' + str(plant.soil_salinity_min) + " dS/m"), None,
+                    put_code('Salinity max: ' + str(plant.soil_salinity_max) + " dS/m"),
+
+                ]),
+                put_buttons(['Edit ' + plant.name, 'Delete ' + plant.name],
+                            onclick=lambda btn, plant_id=plant.id, plant_name=plant.name: plants_buttons_callback(btn, plant_id, plant_name)).style(
+                    "text-align: right; align-self: center;")
+            ]), None,
+        ])
 
 
 def my_profile():
