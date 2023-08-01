@@ -2,6 +2,8 @@ from database.Database import *
 from database.MySetup import Base
 from sqlalchemy import ForeignKey
 
+
+
 class Config(Base):
     __tablename__ = "config"
 
@@ -27,20 +29,20 @@ class Plant(Base):
     name = db.Column("name", db.String, nullable=False, unique=False)
     description = db.Column("description", db.String, nullable=True, unique=False)
 
-    temperature_min = db.Column("temperature_min", db.Integer, nullable=False, unique=False)
-    temperature_max = db.Column("temperature_max", db.Integer, nullable=False, unique=False)
+    temperature_min = db.Column("temperature_min", db.Integer, nullable=True, unique=False)
+    temperature_max = db.Column("temperature_max", db.Integer, nullable=True, unique=False)
 
-    light_min = db.Column("light_min", db.Integer, nullable=False, unique=False)
-    light_max = db.Column("light_max", db.Integer, nullable=False, unique=False)
+    light_min = db.Column("light_min", db.Integer, nullable=True, unique=False)
+    light_max = db.Column("light_max", db.Integer, nullable=True, unique=False)
 
-    soil_humidity_min = db.Column("soil_humidity_min", db.Float, nullable=False, unique=False)
-    soil_humidity_max = db.Column("soil_humidity_max", db.Float, nullable=False, unique=False)
+    soil_humidity_min = db.Column("soil_humidity_min", db.Float, nullable=True, unique=False)
+    soil_humidity_max = db.Column("soil_humidity_max", db.Float, nullable=True, unique=False)
 
-    soil_ph_min = db.Column("soil_ph_min", db.Float, nullable=False, unique=False)
-    soil_ph_max = db.Column("soil_ph_max", db.Float, nullable=False, unique=False)
+    soil_ph_min = db.Column("soil_ph_min", db.Float, nullable=True, unique=False)
+    soil_ph_max = db.Column("soil_ph_max", db.Float, nullable=True, unique=False)
 
-    soil_salinity_min = db.Column("soil_salinity_min", db.Float, nullable=False, unique=False)
-    soil_salinity_max = db.Column("soil_salinity_max", db.Float, nullable=False, unique=False)
+    soil_salinity_min = db.Column("soil_salinity_min", db.Float, nullable=True, unique=False)
+    soil_salinity_max = db.Column("soil_salinity_max", db.Float, nullable=True, unique=False)
 
 
 class Pot(Base):

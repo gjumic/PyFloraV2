@@ -7,6 +7,7 @@ from pywebio import *
 from pywebio.input import *
 from pywebio.output import *
 from pywebio.output import put_html
+from sqlalchemy import desc
 
 from classes.configuration import *
 from classes.db_model import *
@@ -136,8 +137,8 @@ def footer():
 
 
 def admin_panel():
-    put_html("<h2>Admin Panel</h2>")
-    put_html("<b>Application Configuration</b><br><br>")
+    put_html("<h1>Admin Panel</h1>")
+    put_html("<h2>Application Configuration</h2>")
     config = session.query(Config).filter(Config.id == 1).one_or_none()
     put_table([
         ['Configuration Key', 'Configuration Value'],
@@ -157,7 +158,7 @@ def admin_panel():
             "text-align: right; align-self: center;")
         user_data = [user.username, user.first_name, user.last_name, user_button]
         user_list.append(user_data)
-    put_html("<br><br><b>User Configuration</b><br><br>")
+    put_html("<h2>User Configuration</h2>")
     put_table(user_list, header=['Username', 'First Name', 'Last Name', 'Actions'])
     put_button('Add User', onclick=lambda: body(edit_user)).style("align-self: center;")
 
@@ -165,9 +166,9 @@ def edit_configuration():
     clear(scope='header')
     config = session.query(Config).filter(Config.id == 1).one_or_none()
     config_input = input_group("Edit Application Configuration", [
-        input('Location', name='city', value=config.city),
-        input('Latitude', name='latitude', value=config.latitude),
-        input('Longitude', name='longitude', value=config.longitude),
+        input('Location', name='city', value=config.city, required=True),
+        input('Latitude', name='latitude', value=config.latitude, required=True),
+        input('Longitude', name='longitude', value=config.longitude, required=True),
 
     ])
     a = Update_Configuration(config_input['city'], config_input['latitude'].replace(',', '.'), config_input['longitude'].replace(',', '.'))
@@ -176,32 +177,31 @@ def edit_configuration():
 
 def check_user_input(input):
     user = session.query(User).filter(User.username == input).one_or_none()
-    input_str = str(input)  # Convert the input to a string
-
-    if input is None or input_str.strip() == "":
-        return 'Cannot be empty'
     if user is not None:
         return 'Username already exists'
 
 def check_plant_input(input):
-    input_str = str(input)
-    if input is None or input_str.strip() == "":
-        return 'Cannot be empty'
-
+    plant = session.query(Plant).filter(Plant.name == input).one_or_none()
+    if plant is not None:
+        return 'Plant already exists'
 
 def edit_user(id=None):
     clear(scope='header')
     user = session.query(User).filter(User.id == id).one_or_none()
     if id == None:
+        put_info("Leave Username or Password empty to skip creating user!")
         user_input = input_group("Add User", [
             input('Username', name='username', validate=check_user_input),
-            input('Password', name='password', validate=check_user_input),
+            input('Password', name='password'),
             input('First Name', name='first_name'),
             input('Last Name', name='last_name'),
 
         ])
-        a = Update_User(None, user_input['username'], hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), user_input['first_name'], user_input['last_name'] )
-        a.create_user()
+        if user_input['username'] == "" or user_input['password'] == "":
+            toast('Skipped Creating user 🔔')
+        else:
+            a = Update_User(None, user_input['username'], hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), user_input['first_name'], user_input['last_name'] )
+            a.create_user()
         body(admin_panel)
     else:
         user_input = input_group("Edit User", [
@@ -232,14 +232,17 @@ def edit_plant_picture(id, name):
 def edit_user_pass(id):
     clear(scope='header')
     user = session.query(User).filter(User.id == id).one_or_none()
-
+    put_info("Leave empty to skip updating password...")
     user_input = input_group("Add or Edit User", [
-        input('Password', name='password', validate=check_user_input),
+        input('Password', name='password'),
 
     ])
-    a = Update_User(user.id, None, hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), None, None)
-    a.update_password()
-    toast(user.username + ' new password is ' + str(user_input['password']) + ' 🔔')
+    if user_input['password'] == "":
+        toast('Skipped changing password 🔔')
+    else:
+        a = Update_User(user.id, None, hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), None, None)
+        a.update_password()
+        toast(user.username + ' new password is ' + str(user_input['password']) + ' 🔔')
     if my_id == 1:
         body(admin_panel)
     else:
@@ -247,7 +250,7 @@ def edit_user_pass(id):
 
 
 def pots():
-    put_html("<h2>My Pots</h2>")
+    put_html("<h1>My Pots</h1>")
 
 
 def edit_plant(id=None):
@@ -259,39 +262,45 @@ def edit_plant(id=None):
         plant = session.query(Plant).filter(Plant.id == id).one_or_none()
         header_input = "Edit Plant"
         name_readonly = True
+    else:
+        put_info("Leave Name empty to skip creating the Plant!")
 
     plant_input = input_group(header_input, [
-        input('Name', name='name', value=plant.name if plant else '', readonly=name_readonly),
+        input('Name', name='name', value=plant.name if plant else '', readonly=name_readonly, validate=check_plant_input if not name_readonly else None),
         input('Description', name='description', value=plant.description if plant else ''),
 
-        input('Minimum Temperature - \u00b0C', name='temp_min', value=plant.temperature_min if plant else '', type=NUMBER, validate=check_plant_input),
-        input('Maximum Temperature - \u00b0C', name='temp_max', value=plant.temperature_max if plant else '', type=NUMBER, validate=check_plant_input),
-        input('Minimum Light - lx', name='light_min', value=plant.light_min if plant else '', type=NUMBER, validate=check_plant_input),
-        input('Maximum Light - lx', name='light_max', value=plant.light_max if plant else '', type=NUMBER, validate=check_plant_input),
-        input('Minimum Humidity - %', name='hum_min', value=plant.soil_humidity_min if plant else '', type=NUMBER, validate=check_plant_input),
-        input('Maximum Humidity - %', name='hum_max', value=plant.soil_humidity_max if plant else '', type=NUMBER, validate=check_plant_input),
-        input('Minimum pH', name='ph_min', value=plant.soil_ph_min if plant else '', type=FLOAT, validate=check_plant_input),
-        input('Maximum pH', name='ph_max', value=plant.soil_ph_max if plant else '', type=FLOAT, validate=check_plant_input),
-        input('Salinity - dS/m', name='sal_min', value=plant.soil_salinity_min if plant else '', type=FLOAT, validate=check_plant_input),
-        input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max if plant else '', type=FLOAT, validate=check_plant_input),
+        input('Minimum Temperature - \u00b0C', name='temp_min', value=plant.temperature_min if plant else '0', type=NUMBER, required=name_readonly),
+        input('Maximum Temperature - \u00b0C', name='temp_max', value=plant.temperature_max if plant else '0', type=NUMBER, required=name_readonly),
+        input('Minimum Light - lx', name='light_min', value=plant.light_min if plant else '0', type=NUMBER, required=name_readonly),
+        input('Maximum Light - lx', name='light_max', value=plant.light_max if plant else '0', type=NUMBER, required=name_readonly),
+        input('Minimum Humidity - %', name='hum_min', value=plant.soil_humidity_min if plant else '0', type=NUMBER, required=name_readonly),
+        input('Maximum Humidity - %', name='hum_max', value=plant.soil_humidity_max if plant else '0', type=NUMBER, required=name_readonly),
+        input('Minimum pH', name='ph_min', value=plant.soil_ph_min if plant else '0', type=FLOAT, required=name_readonly),
+        input('Maximum pH', name='ph_max', value=plant.soil_ph_max if plant else '0', type=FLOAT, required=name_readonly),
+        input('Salinity - dS/m', name='sal_min', value=plant.soil_salinity_min if plant else '0', type=FLOAT, required=name_readonly),
+        input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max if plant else '0', type=FLOAT, required=name_readonly),
 
     ])
-    a = Update_Plant(id, plant_input['name'], plant_input['description'], plant_input['temp_min'],
-                     plant_input['temp_max'], plant_input['light_min'], plant_input['light_max'],
-                     plant_input['hum_min'], plant_input['hum_max'], plant_input['ph_min'], plant_input['ph_max'],
-                     plant_input['sal_min'], plant_input['sal_max'])
-    if id is not None:
-        a.update_plant()
-        body(plants, plant.id)
-    else:
-        a.create_plant()
+    if plant_input['name'] == "":
+        toast('Skipped creating Plant 🔔')
         body(plants)
+    else:
+        a = Update_Plant(id, plant_input['name'], plant_input['description'], plant_input['temp_min'],
+                         plant_input['temp_max'], plant_input['light_min'], plant_input['light_max'],
+                         plant_input['hum_min'], plant_input['hum_max'], plant_input['ph_min'], plant_input['ph_max'],
+                         plant_input['sal_min'], plant_input['sal_max'])
+        if id is not None:
+            a.update_plant()
+            body(plants, plant.id)
+        else:
+            a.create_plant()
+            body(plants)
 
 
 def plants(id=None):
     put_html("<h1>My Plants</h1>")
     if id == None:
-        plants = session.query(Plant).all()
+        plants = session.query(Plant).order_by(desc(Plant.id)).all()
         put_button('Add New Plant', onclick=lambda: body(edit_plant)).style("text-align: right; align-self: center;")
     else:
         plants = session.query(Plant).filter(Plant.id == id)
@@ -393,7 +402,7 @@ def plot_temps(latitude, longitude, location):
 def main_menu():
     a = Update_Configuration()
     a.get_configuration()
-    put_html("<h2>Welcome to PyFlora</h2>")
+    put_html("<h1>Welcome to PyFlora</h1>")
     put_html("<b>Location: " + a.city + "</b><br>").style(
         "text-align: right; align-self: center;")
     put_html("<b>Latitude: " + str(a.latitude) + "</b><br>").style(

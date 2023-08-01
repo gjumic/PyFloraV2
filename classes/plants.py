@@ -3,7 +3,7 @@ from database.Database import *
 
 class Update_Plant():
 
-    def __init__(self, id, name=None, description=None, temperature_min=None, temperature_max=None, light_min=None, light_max=None, soil_humidity_min=None, soil_humidity_max=None, soil_ph_min=None, soil_ph_max=None, soil_salinity_min=None, soil_salinity_max=None):
+    def __init__(self, id, name=None, description=None, temperature_min=0, temperature_max=0, light_min=0, light_max=0, soil_humidity_min=0, soil_humidity_max=0, soil_ph_min=0, soil_ph_max=0, soil_salinity_min=0, soil_salinity_max=0):
         self.id = id
         self.name = name
         self.description = description
