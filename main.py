@@ -357,7 +357,7 @@ def plot_temps(latitude, longitude, location):
 def main_menu():
     a = Update_Configuration()
     a.get_configuration()
-    put_html("<h2>Welcome to Pyflora</h2>")
+    put_html("<h2>Welcome to PyFlora</h2>")
     put_html("<b>Location: " + a.city + "</b><br>").style(
         "text-align: right; align-self: center;")
     put_html("<b>Latitude: " + str(a.latitude) + "</b><br>").style(

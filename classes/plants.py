@@ -42,5 +42,6 @@ class Update_Plant():
     def delete_plant(self):
         print("Delete Plant with id: " + str(self.id))
         session.query(Plant).filter(Plant.id == self.id).delete()
+
         session.commit()
 

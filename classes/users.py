@@ -34,9 +34,11 @@ class Update_User():
         print("Update User Password with id: " + str(self.id))
         user = session.query(User).filter(User.id == self.id).one_or_none()
         user.password = self.password
+
         session.commit()
 
     def delete_user(self):
         print("Delete User with id: " + str(self.id))
         session.query(User).filter(User.id == self.id).delete()
+
         session.commit()
