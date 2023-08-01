@@ -7,8 +7,11 @@ from pywebio.input import *
 from pywebio.output import *
 from pywebio.output import put_html
 
-from classes import db_model
+from classes.configuration import *
 from classes.db_model import *
+from classes.login import *
+from classes.plants import *
+from classes.users import *
 
 admin_login = False
 user_login = False
@@ -87,7 +90,7 @@ def users_buttons_callback(btn, user_id):
         if user_id == 1:
             toast('Cannot Delete Admin User! 🔔')
         else:
-            a = Delete_User(user_id)
+            a = Update_User(user_id)
             a.delete_user()
             body(admin_panel)
     elif btn == 'Edit':
@@ -221,24 +224,27 @@ def pots():
     put_html("<h2>My Pots</h2>")
 
 
-def edit_plant(id):
+def edit_plant(id=None):
     clear(scope='header')
-    plant = session.query(Plant).filter(Plant.id == id).one_or_none()
-    # img = open('images/plants/' + plant.image, 'rb').read()
-    plant_input = input_group("Add or Edit Plant", [
-        input('Name', name='name', value=plant.name),
-        input('Description', name='description', value=plant.description),
+    plant = None
 
-        input('Minimum Temperature - \u00b0C', name='temp_min', value=plant.temperature_min, type=NUMBER),
-        input('Maximum Temperature - \u00b0C', name='temp_max', value=plant.temperature_max, type=NUMBER),
-        input('Minimum Light - lx', name='light_min', value=plant.light_min, type=NUMBER),
-        input('Maximum Light - lx', name='light_max', value=plant.light_max, type=NUMBER),
-        input('Minimum Humidity - %', name='hum_min', value=plant.soil_humidity_min, type=NUMBER),
-        input('Maximum Humidity - %', name='hum_max', value=plant.soil_humidity_max, type=NUMBER),
-        input('Minimum pH', name='ph_min', value=plant.soil_ph_min, type=FLOAT),
-        input('Maximum pH', name='ph_max', value=plant.soil_ph_max, type=FLOAT),
-        input('Salinity - dS/m', name='sal_min', value=plant.soil_salinity_min, type=FLOAT),
-        input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max, type=FLOAT),
+    if id is not None:
+        plant = session.query(Plant).filter(Plant.id == id).one_or_none()
+
+    plant_input = input_group("Add or Edit Plant", [
+        input('Name', name='name', value=plant.name if plant else ''),
+        input('Description', name='description', value=plant.description if plant else ''),
+
+        input('Minimum Temperature - \u00b0C', name='temp_min', value=plant.temperature_min if plant else '', type=NUMBER),
+        input('Maximum Temperature - \u00b0C', name='temp_max', value=plant.temperature_max if plant else '', type=NUMBER),
+        input('Minimum Light - lx', name='light_min', value=plant.light_min if plant else '', type=NUMBER),
+        input('Maximum Light - lx', name='light_max', value=plant.light_max if plant else '', type=NUMBER),
+        input('Minimum Humidity - %', name='hum_min', value=plant.soil_humidity_min if plant else '', type=NUMBER),
+        input('Maximum Humidity - %', name='hum_max', value=plant.soil_humidity_max if plant else '', type=NUMBER),
+        input('Minimum pH', name='ph_min', value=plant.soil_ph_min if plant else '', type=FLOAT),
+        input('Maximum pH', name='ph_max', value=plant.soil_ph_max if plant else '', type=FLOAT),
+        input('Salinity - dS/m', name='sal_min', value=plant.soil_salinity_min if plant else '', type=FLOAT),
+        input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max if plant else '', type=FLOAT),
 
     ])
     a = Update_Plant(plant.id, plant_input['name'], plant_input['description'], plant_input['temp_min'],
@@ -250,19 +256,22 @@ def edit_plant(id):
 
 
 def plants(id=None):
-    put_html("<h2>My Plants</h2>")
+    put_html("<h1>My Plants</h1>")
     if id == None:
         plants = session.query(Plant).all()
+        put_button('Add New Plant', onclick=lambda: body(edit_plant)).style("text-align: right; align-self: center;")
     else:
         plants = session.query(Plant).filter(Plant.id == id)
     for plant in plants:
+        put_html("<h2>" + plant.name + " - " + plant.description + "</h2>")
         img = open('images/plants/' + plant.image, 'rb').read()
         put_row([
-            put_column([
-                put_code(plant.name),
-                put_code(plant.description),
-            ]), None,
-            put_image(img, format="png").style("align-self: center;"),
+            # put_column([
+            #     put_code(plant.name),
+            #     put_code(plant.description),
+            # ]), None,
+            put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
+            # put_html("<br>")
         ])
         put_row([
             put_column([
@@ -301,7 +310,7 @@ def plants(id=None):
 
 
 def plot_temps(latitude, longitude, location):
-    put_html("<h2>Daily Min and Max Temperatures in " + location + "</h2>")
+    put_html("<h2>Daily Forecast in " + location + "</h2>")
 
     URL_WEATHER = f'https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=temperature_2m_max,temperature_2m_min&current_weather=true&timezone=Europe%2FBerlin'
     json_data = requests.get(URL_WEATHER)
