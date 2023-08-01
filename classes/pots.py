@@ -12,6 +12,7 @@ class Delete_Pot():
         session.query(Pot).filter(Pot.id == self.id).delete()
         session.commit()
 
+
 class Update_Pot():
 
     def __init__(self, id, name, description, status, plant_id, temperature, light, soil_hum, soil_ph, soil_sal):

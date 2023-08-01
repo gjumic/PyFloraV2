@@ -3,6 +3,7 @@ import hashlib
 from classes.db_model import User
 from database.Database import *
 
+
 class Login_User():
 
     def __init__(self, id, username, password, login_status):

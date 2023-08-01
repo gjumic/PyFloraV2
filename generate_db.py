@@ -21,7 +21,7 @@ user_data = [
 
 plant_data = [
     ("Rose", "Beautiful red flowers", 10, 30, 1000, 8000, 20, 80, 5.5, 7.0, 0.1, 0.5),
-    ("Lavender", "Fragrant purple flowers",5, 25, 800, 6000, 20, 100, 6.0, 7.5, 0.1, 0.6),
+    ("Lavender", "Fragrant purple flowers", 5, 25, 800, 6000, 20, 100, 6.0, 7.5, 0.1, 0.6),
     ("Snake Plant", "Tall green leaves", 15, 35, 500, 4000, 30, 100, 5.5, 7.5, 0.1, 0.7),
     ("Fern", "Lush green foliage", 18, 25, 800, 3000, 40, 10, 5.0, 6.5, 0.1, 0.6),
     ("Cactus", "Spiny desert plant", 20, 40, 1000, 12000, 10, 70, 6.5, 8.0, 0.1, 0.8),
@@ -53,14 +53,17 @@ for record in user_data:
 for record in plant_data:
     name, description, temp_min, temp_max, light_min, light_max, hum_min, hum_max, ph_min, ph_max, sal_min, sal_max = record
     new_plant = db_model.Plant(name=name, description=description, temperature_min=temp_min, temperature_max=temp_max,
-                      light_min=light_min, light_max=light_max, soil_humidity_min=hum_min, soil_humidity_max=hum_max,
-                      soil_ph_min=ph_min, soil_ph_max=ph_max, soil_salinity_min=ph_min, soil_salinity_max=ph_max)
+                               light_min=light_min, light_max=light_max, soil_humidity_min=hum_min,
+                               soil_humidity_max=hum_max,
+                               soil_ph_min=ph_min, soil_ph_max=ph_max, soil_salinity_min=ph_min,
+                               soil_salinity_max=ph_max)
     session.add(new_plant)
 
 for record in pot_data:
     name, description, status, temp, light, soil_hum, soil_ph, soil_sal, plant_id = record
     new_pot = db_model.Pot(name=name, description=description, status=status,
-                  temperature=temp, light=light, soil_hum=soil_hum, soil_ph=soil_ph, soil_sal=soil_sal, plant_id=plant_id)
+                           temperature=temp, light=light, soil_hum=soil_hum, soil_ph=soil_ph, soil_sal=soil_sal,
+                           plant_id=plant_id)
     session.add(new_pot)
 
 session.commit()

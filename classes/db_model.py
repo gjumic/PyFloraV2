@@ -1,7 +1,7 @@
-from database.Database import *
-from database.MySetup import Base
 from sqlalchemy import ForeignKey
 
+from database.Database import *
+from database.MySetup import Base
 
 
 class Config(Base):
@@ -11,6 +11,7 @@ class Config(Base):
     city = db.Column("city", db.String, nullable=False, unique=True)
     latitude = db.Column("latitude", db.String, nullable=False, unique=True)
     longitude = db.Column("longitude", db.String, nullable=False, unique=True)
+
 
 class User(Base):
     __tablename__ = "users"
@@ -59,6 +60,3 @@ class Pot(Base):
     soil_hum = db.Column("soil_hum", db.Float, nullable=False, unique=False)
     soil_ph = db.Column("soil_ph", db.Float, nullable=False, unique=False)
     soil_sal = db.Column("soil_sal", db.Float, nullable=False, unique=False)
-
-
-

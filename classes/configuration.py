@@ -1,6 +1,7 @@
 from classes.db_model import Config
 from database.Database import *
 
+
 class Update_Configuration():
 
     def __init__(self, city=None, latitude=None, longitude=None):

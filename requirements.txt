@@ -1,0 +1,16 @@
+certifi==2023.7.22
+charset-normalizer==3.2.0
+greenlet==2.0.2
+idna==3.4
+Jinja2==2.11.3
+MarkupSafe==2.0.1
+pyg2plot==0.1.8
+pywebio==1.8.2
+requests==2.31.0
+simplejson==3.19.1
+SQLAlchemy==2.0.19
+tornado==6.3.2
+typing_extensions==4.7.1
+ua-parser==0.18.0
+urllib3==2.0.4
+user-agents==2.2.0

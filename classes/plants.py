@@ -1,9 +1,12 @@
 from classes.db_model import Plant
 from database.Database import *
 
+
 class Update_Plant():
 
-    def __init__(self, id, name=None, description=None, temperature_min=0, temperature_max=0, light_min=0, light_max=0, soil_humidity_min=0, soil_humidity_max=0, soil_ph_min=0, soil_ph_max=0, soil_salinity_min=0, soil_salinity_max=0):
+    def __init__(self, id, name=None, description=None, temperature_min=0, temperature_max=0, light_min=0, light_max=0,
+                 soil_humidity_min=0, soil_humidity_max=0, soil_ph_min=0, soil_ph_max=0, soil_salinity_min=0,
+                 soil_salinity_max=0):
         self.id = id
         self.name = name
         self.description = description
@@ -16,9 +19,7 @@ class Update_Plant():
         self.soil_ph_min = soil_ph_min
         self.soil_ph_max = soil_ph_max
         self.soil_salinity_min = soil_salinity_min
-        self.soil_salinity_max  = soil_salinity_max
-
-
+        self.soil_salinity_max = soil_salinity_max
 
     def update_plant(self):
         print("Update Plant with id: " + str(self.id))

@@ -101,7 +101,6 @@ def users_buttons_callback(btn, user_id):
         body(edit_user_pass, user_id)
 
 
-
 def plants_buttons_callback(btn, plant_id, plant_name):
     if btn == 'Delete ' + plant_name:
         print('Delete ' + plant_name)
@@ -153,14 +152,15 @@ def admin_panel():
 
     for user in users:
         user_button = put_buttons(['Edit', 'Change Password', 'Delete'],
-                    onclick=lambda btn, user_id=user.id: users_buttons_callback(btn,
-                                                                                user_id)).style(
+                                  onclick=lambda btn, user_id=user.id: users_buttons_callback(btn,
+                                                                                              user_id)).style(
             "text-align: right; align-self: center;")
         user_data = [user.username, user.first_name, user.last_name, user_button]
         user_list.append(user_data)
     put_html("<h2>User Configuration</h2>")
     put_table(user_list, header=['Username', 'First Name', 'Last Name', 'Actions'])
     put_button('Add User', onclick=lambda: body(edit_user)).style("align-self: center;")
+
 
 def edit_configuration():
     clear(scope='header')
@@ -171,24 +171,27 @@ def edit_configuration():
         input('Longitude', name='longitude', value=config.longitude, required=True),
 
     ])
-    a = Update_Configuration(config_input['city'], config_input['latitude'].replace(',', '.'), config_input['longitude'].replace(',', '.'))
+    a = Update_Configuration(config_input['city'], config_input['latitude'].replace(',', '.'),
+                             config_input['longitude'].replace(',', '.'))
     a.update_configuration()
     body(admin_panel)
+
 
 def check_user_input(input):
     user = session.query(User).filter(User.username == input).one_or_none()
     if user is not None:
         return 'Username already exists'
 
+
 def check_plant_input(input):
     plant = session.query(Plant).filter(Plant.name == input).one_or_none()
     if plant is not None:
         return 'Plant already exists'
 
+
 def check_plant_measurement(input):
     if input is None:
         return 'Input cannot be none'
-
 
 
 def edit_user(id=None):
@@ -206,7 +209,9 @@ def edit_user(id=None):
         if user_input['username'] == "" or user_input['password'] == "":
             toast('Skipped Creating user 🔔')
         else:
-            a = Update_User(None, user_input['username'], hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), user_input['first_name'], user_input['last_name'] )
+            a = Update_User(None, user_input['username'],
+                            hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), user_input['first_name'],
+                            user_input['last_name'])
             a.create_user()
         body(admin_panel)
     else:
@@ -223,6 +228,7 @@ def edit_user(id=None):
         else:
             body(main_menu)
 
+
 def edit_plant_picture(id, name):
     clear(scope='header')
     put_info("Just press Submit without choosing file to skip changing image!")
@@ -237,6 +243,7 @@ def edit_plant_picture(id, name):
             f.write(img['content'])
 
     body(plants, id)
+
 
 def edit_user_pass(id):
     clear(scope='header')
@@ -275,19 +282,30 @@ def edit_plant(id=None):
         put_info("Press Reset then Submit button to skip creating the Plant!")
 
     plant_input = input_group(header_input, [
-        input('Name', name='name', value=plant.name if plant else '', readonly=name_readonly, validate=check_plant_input if not name_readonly else None),
+        input('Name', name='name', value=plant.name if plant else '', readonly=name_readonly,
+              validate=check_plant_input if not name_readonly else None),
         input('Description', name='description', value=plant.description if plant else ''),
 
-        input('Minimum Temperature - \u00b0C', name='temp_min', value=plant.temperature_min if plant else '0', type=NUMBER, required=name_readonly, validate=check_plant_measurement),
-        input('Maximum Temperature - \u00b0C', name='temp_max', value=plant.temperature_max if plant else '0', type=NUMBER, required=name_readonly, validate=check_plant_measurement),
-        input('Minimum Light - lx', name='light_min', value=plant.light_min if plant else '0', type=NUMBER, required=name_readonly, validate=check_plant_measurement),
-        input('Maximum Light - lx', name='light_max', value=plant.light_max if plant else '0', type=NUMBER, required=name_readonly, validate=check_plant_measurement),
-        input('Minimum Humidity - %', name='hum_min', value=plant.soil_humidity_min if plant else '0', type=NUMBER, required=name_readonly, validate=check_plant_measurement),
-        input('Maximum Humidity - %', name='hum_max', value=plant.soil_humidity_max if plant else '0', type=NUMBER, required=name_readonly, validate=check_plant_measurement),
-        input('Minimum pH', name='ph_min', value=plant.soil_ph_min if plant else '0', type=FLOAT, required=name_readonly, validate=check_plant_measurement),
-        input('Maximum pH', name='ph_max', value=plant.soil_ph_max if plant else '0', type=FLOAT, required=name_readonly, validate=check_plant_measurement),
-        input('Salinity - dS/m', name='sal_min', value=plant.soil_salinity_min if plant else '0', type=FLOAT, required=name_readonly, validate=check_plant_measurement),
-        input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max if plant else '0', type=FLOAT, required=name_readonly, validate=check_plant_measurement),
+        input('Minimum Temperature - \u00b0C', name='temp_min', value=plant.temperature_min if plant else '0',
+              type=NUMBER, required=name_readonly, validate=check_plant_measurement),
+        input('Maximum Temperature - \u00b0C', name='temp_max', value=plant.temperature_max if plant else '0',
+              type=NUMBER, required=name_readonly, validate=check_plant_measurement),
+        input('Minimum Light - lx', name='light_min', value=plant.light_min if plant else '0', type=NUMBER,
+              required=name_readonly, validate=check_plant_measurement),
+        input('Maximum Light - lx', name='light_max', value=plant.light_max if plant else '0', type=NUMBER,
+              required=name_readonly, validate=check_plant_measurement),
+        input('Minimum Humidity - %', name='hum_min', value=plant.soil_humidity_min if plant else '0', type=NUMBER,
+              required=name_readonly, validate=check_plant_measurement),
+        input('Maximum Humidity - %', name='hum_max', value=plant.soil_humidity_max if plant else '0', type=NUMBER,
+              required=name_readonly, validate=check_plant_measurement),
+        input('Minimum pH', name='ph_min', value=plant.soil_ph_min if plant else '0', type=FLOAT,
+              required=name_readonly, validate=check_plant_measurement),
+        input('Maximum pH', name='ph_max', value=plant.soil_ph_max if plant else '0', type=FLOAT,
+              required=name_readonly, validate=check_plant_measurement),
+        input('Salinity - dS/m', name='sal_min', value=plant.soil_salinity_min if plant else '0', type=FLOAT,
+              required=name_readonly, validate=check_plant_measurement),
+        input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max if plant else '0', type=FLOAT,
+              required=name_readonly, validate=check_plant_measurement),
 
     ])
     if plant_input['name'] == "":
