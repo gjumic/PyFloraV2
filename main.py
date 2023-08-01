@@ -21,29 +21,34 @@ img = open('images/logo2.png', 'rb').read()
 def login_form():
     global admin_login
     global user_login
+    global my_id
     login_input = input_group("Login", [
         input('Username', name='username', value="admin"),
         input('Password', type="password", name='password', value="2241")])
-    a = Login_User(login_input['username'], login_input['password'], False)
+    a = Login_User(None, login_input['username'], login_input['password'], False)
     a.login()
     if a.login_status == "admin":
         toast('Admin Login! 🔔')
         admin_login = True
-        body(graf)
+        my_id = a.id
+        body(main_menu)
     elif a.login_status == "user":
         toast('Login OK! 🔔')
         user_login = True
-        body(graf)
+        my_id = a.id
+        body(main_menu)
     else:
-        toast('Login Failed! 🔔')
+        put_error('Login Failed! 🔔')
         login_form()
 
 
 def logout():
     global admin_login
     global user_login
+    global my_id
     admin_login = False
     user_login = False
+    my_id = None
     body(login_form)
 
 
@@ -62,12 +67,14 @@ def body(body_function, *args, **kwargs):
 
 
 def main_buttons_callback(btn):
-    if btn == 'Pots':
+    if btn == 'Main Menu':
+        body(main_menu)
+    elif btn == 'Pots':
         body(pots)
     elif btn == 'Plants':
         body(plants)
     elif btn == 'My Profile':
-        body(my_profile)
+        body(edit_user, my_id)
     elif btn == 'Admin Panel':
         body(admin_panel)
     elif btn == 'Logout':
@@ -105,11 +112,11 @@ def header():
     with use_scope('header', clear=True):
         put_image(img, format="png").style("align-self: center;")
         if admin_login:
-            put_buttons(['Pots', 'Plants', 'My Profile', 'Admin Panel', 'Logout'],
+            put_buttons(['Main Menu', 'Pots', 'Plants', 'My Profile', 'Admin Panel', 'Logout'],
                         onclick=lambda btn: main_buttons_callback(btn)).style(
                 "text-align: right; align-self: center;")
         if user_login:
-            put_buttons(['Pots', 'Plants', 'My Profile', 'Logout'],
+            put_buttons(['Main Menu', 'Pots', 'Plants', 'My Profile', 'Logout'],
                         onclick=lambda btn: main_buttons_callback(btn)).style(
                 "text-align: right; align-self: center;")
 
@@ -120,90 +127,98 @@ def footer():
 
 
 def admin_panel():
-    put_text("Application Configuration")
+    put_html("<h2>Admin Panel</h2>")
+    put_html("<b>Application Configuration</b><br><br>")
     config = session.query(Config).filter(Config.id == 1).one_or_none()
-    put_text(config.city)
-    put_button('Change', onclick=lambda: body(edit_configuration)).style("text-align: right; align-self: center;")
+    put_table([
+        ['Configuration Key', 'Configuration Value'],
+        ['Location', config.city],
+        ['Latitude', config.latitude],
+        ['Longitude', config.longitude],
+    ])
+    put_button('Change', onclick=lambda: body(edit_configuration)).style("align-self: center;")
 
     users = session.query(User).all()
-    put_row([
-        put_column([
-            put_row([
-                put_code('Username'), None,  # None represents the space between the output
-                put_code('First Name'), None,
-                put_code('Last Name'), None,
-                put_code('Actions'),
-            ]),
-        ]), None,
-    ])
+    user_list = []
+
     for user in users:
-        put_row([
-            put_column([
-                put_row([
-                    put_code(user.username), None,  # None represents the space between the output
-                    put_code(user.first_name), None,
-                    put_code(user.last_name), None,
-                    put_buttons(['Edit', 'Change Password', 'Delete'],
-                                onclick=lambda btn, user_id=user.id: users_buttons_callback(btn,
-                                                                                            user_id)).style(
-                        "text-align: right; align-self: center;")
-                ]),
-            ]), None,
-        ])
-    put_button('Add User', onclick=lambda: body(edit_user)).style("text-align: right; align-self: center;")
+        user_button = put_buttons(['Edit', 'Change Password', 'Delete'],
+                    onclick=lambda btn, user_id=user.id: users_buttons_callback(btn,
+                                                                                user_id)).style(
+            "text-align: right; align-self: center;")
+        user_data = [user.username, user.first_name, user.last_name, user_button]
+        user_list.append(user_data)
+    put_html("<br><br><b>User Configuration</b><br><br>")
+    put_table(user_list, header=['Username', 'First Name', 'Last Name', 'Actions'])
+    put_button('Add User', onclick=lambda: body(edit_user)).style("align-self: center;")
 
 def edit_configuration():
     clear(scope='header')
     config = session.query(Config).filter(Config.id == 1).one_or_none()
     config_input = input_group("Edit Application Configuration", [
-        input('City', name='city', value=config.city),
+        input('Location', name='city', value=config.city),
+        input('Latitude', name='latitude', value=config.latitude),
+        input('Longitude', name='longitude', value=config.longitude),
 
     ])
-    a = Update_Configuration(config_input['city'])
+    a = Update_Configuration(config_input['city'], config_input['latitude'].replace(',', '.'), config_input['longitude'].replace(',', '.'))
     a.update_configuration()
     body(admin_panel)
+
+def check_input(input):
+    user = session.query(User).filter(User.username == input).one_or_none()
+    if input == "":
+        return 'Cannot be empty'
+    elif user is not None:
+        return 'Username already exists'
+
 
 def edit_user(id=None):
     clear(scope='header')
     user = session.query(User).filter(User.id == id).one_or_none()
     if id == None:
         user_input = input_group("Add User", [
-            input('Username', name='username'),
-            input('Password', name='password'),
+            input('Username', name='username', validate=check_input),
+            input('Password', name='password', validate=check_input),
             input('First Name', name='first_name'),
             input('Last Name', name='last_name'),
 
         ])
         a = Update_User(None, user_input['username'], hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), user_input['first_name'], user_input['last_name'] )
         a.create_user()
+        body(admin_panel)
     else:
         user_input = input_group("Edit User", [
-            input('Username', name='username', value=user.username),
             input('First Name', name='first_name', value=user.first_name),
             input('Last Name', name='last_name', value=user.last_name),
 
         ])
-        a = Update_User(user.id, user_input['username'], None, user_input['first_name'], user_input['last_name'])
+        a = Update_User(user.id, None, None, user_input['first_name'], user_input['last_name'])
         a.update_user()
-
-    body(graf)
+        if my_id == 1:
+            body(admin_panel)
+        else:
+            body(main_menu)
 
 
 def edit_user_pass(id):
     clear(scope='header')
     user = session.query(User).filter(User.id == id).one_or_none()
     user_input = input_group("Add or Edit User", [
-        input('Password', name='password'),
+        input('Password', name='password', validate=check_input),
 
     ])
     a = Update_User(user.id, None, hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), None, None)
     a.update_password()
     toast(user.username + ' new password is ' + str(user_input['password']) + ' 🔔')
-    body(graf)
+    if my_id == 1:
+        body(admin_panel)
+    else:
+        body(main_menu)
 
 
 def pots():
-    put_text("pots content")
+    put_html("<h2>My Pots</h2>")
 
 
 def edit_plant(id):
@@ -235,6 +250,7 @@ def edit_plant(id):
 
 
 def plants(id=None):
+    put_html("<h2>My Plants</h2>")
     if id == None:
         plants = session.query(Plant).all()
     else:
@@ -284,31 +300,32 @@ def plants(id=None):
         ])
 
 
-def my_profile():
-    put_text("my_profile content")
+def plot_temps(latitude, longitude, location):
+    put_html("<h2>Daily Min and Max Temperatures in " + location + "</h2>")
 
-
-def graf():
-    put_text("main content")
-    URL_WEATHER = 'https://api.open-meteo.com/v1/forecast?latitude=45.55&longitude=18.69&hourly=temperature_2m&current_weather=true&timezone=Europe%2FBerlin&past_days=2'
+    URL_WEATHER = f'https://api.open-meteo.com/v1/forecast?latitude={latitude}&longitude={longitude}&daily=temperature_2m_max,temperature_2m_min&current_weather=true&timezone=Europe%2FBerlin'
     json_data = requests.get(URL_WEATHER)
     weather_data = json.loads(json_data.text)
 
     result = []
 
-    for i in range(len(weather_data['hourly']['time'])):
-        temp = weather_data['hourly']['temperature_2m'][i]
-        time = weather_data['hourly']['time'][i]
-        result.append({'time': time, 'value': temp})
+    for i in range(len(weather_data['daily']['time'])):
+        time = weather_data['daily']['time'][i]
+        min_temp = weather_data['daily']['temperature_2m_min'][i]
+        max_temp = weather_data['daily']['temperature_2m_max'][i]
 
-    print(result)
+        result.append({'time': time, 'type': 'Min', 'value': min_temp})
+        result.append({'time': time, 'type': 'Max', 'value': max_temp})
+
+    # Initialize the plot
     line = Plot("Line")
-
     line.set_options({
+        "title": "Daily Min and Max Temperatures",
         "appendPadding": 32,
         "data": result,
         "xField": "time",
         "yField": "value",
+        "seriesField": "type",  # Use 'type' field to distinguish between Min and Max temperatures
         "label": {},
         "smooth": True,
         "lineStyle": {
@@ -326,6 +343,19 @@ def graf():
     })
 
     put_html(line.render_notebook(), scope='main')
+
+
+def main_menu():
+    a = Update_Configuration()
+    a.get_configuration()
+    put_html("<h2>Welcome to Pyflora</h2>")
+    put_html("<b>Location: " + a.city + "</b><br>").style(
+        "text-align: right; align-self: center;")
+    put_html("<b>Latitude: " + str(a.latitude) + "</b><br>").style(
+        "text-align: right; align-self: center;")
+    put_html("<b>Longitude: " + str(a.longitude) + "</b><br>").style(
+        "text-align: right; align-self: center;")
+    plot_temps(a.latitude, a.longitude, a.city)
 
 
 put_scope('header', content=[header()])

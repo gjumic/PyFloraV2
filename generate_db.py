@@ -7,12 +7,14 @@ from database.Database import *
 database.MySetup.Base.metadata.create_all(bind=db_engine)
 
 city = "Osijek"
+latitude = 45.55
+longitude = 18.69
 
-new_config = db_model.Config(city=city)
+new_config = db_model.Config(city=city, latitude=latitude, longitude=longitude)
 session.add(new_config)
 
 user_data = [
-    ("admin", hashlib.md5("2241".encode('utf-8')).hexdigest(), "", ""),
+    ("admin", hashlib.md5("2241".encode('utf-8')).hexdigest(), "Administrator", ""),
     ("goran", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Goran", "Jumic"),
     ("pero", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Pero", ""),
 ]

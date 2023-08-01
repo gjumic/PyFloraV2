@@ -9,6 +9,8 @@ class Config(Base):
 
     id = db.Column("id", db.Integer, primary_key=True)
     city = db.Column("city", db.String, nullable=False, unique=True)
+    latitude = db.Column("latitude", db.String, nullable=False, unique=True)
+    longitude = db.Column("longitude", db.String, nullable=False, unique=True)
 
 class User(Base):
     __tablename__ = "users"
@@ -62,7 +64,8 @@ class Pot(Base):
 
 class Login_User():
 
-    def __init__(self, username, password, login_status):
+    def __init__(self, id, username, password, login_status):
+        self.id = id
         self.username = username
         self.password = password
         self.login_status = login_status
@@ -70,11 +73,13 @@ class Login_User():
     def login(self):
         user = session.query(User).filter(User.username == self.username).one_or_none()
         if user is not None and hashlib.md5(self.password.encode('utf-8')).hexdigest() == user.password:
+            self.id = user.id
             if user.username == "admin":
                 self.login_status = "admin"
                 return
             else:
                 self.login_status = "user"
+
 
 class Delete_User():
 
@@ -109,7 +114,6 @@ class Update_User():
     def update_user(self):
         print("Update User with id: " + str(self.id))
         user = session.query(User).filter(User.id == self.id).one_or_none()
-        user.username = self.username
         user.first_name = self.first_name
         user.last_name = self.last_name
 
@@ -123,21 +127,24 @@ class Update_User():
 
 class Update_Configuration():
 
-    def __init__(self, city):
+    def __init__(self, city=None, latitude=None, longitude=None):
         self.city = city
+        self.latitude = latitude
+        self.longitude = longitude
 
     def update_configuration(self):
         config = session.query(Config).filter(Config.id == 1).one_or_none()
         config.city = self.city
+        config.latitude = self.latitude
+        config.longitude = self.longitude
 
         session.commit()
 
-
-
-
-
-
-
+    def get_configuration(self):
+        config = session.query(Config).filter(Config.id == 1).one_or_none()
+        self.city = config.city
+        self.latitude = config.latitude
+        self.longitude = config.longitude
 
 
 class Delete_Plant():
