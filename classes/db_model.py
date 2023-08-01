@@ -26,7 +26,6 @@ class Plant(Base):
     id = db.Column("id", db.Integer, primary_key=True)
     name = db.Column("name", db.String, nullable=False, unique=True)
     description = db.Column("description", db.String, nullable=True, unique=False)
-    image = db.Column("image", db.String, nullable=True, unique=False)
 
     temperature_min = db.Column("temperature_min", db.Integer, nullable=False, unique=False)
     temperature_max = db.Column("temperature_max", db.Integer, nullable=False, unique=False)

@@ -45,3 +45,15 @@ class Update_Plant():
 
         session.commit()
 
+    def create_plant(self):
+        print("Create Plant: " + self.name)
+        new_plant = Plant(name=self.name, description=self.description,
+                          temperature_min=self.temperature_min, temperature_max=self.temperature_max,
+                          light_min=self.light_min, light_max=self.light_max,
+                          soil_humidity_min=self.soil_humidity_min, soil_humidity_max=self.soil_humidity_max,
+                          soil_ph_min=self.soil_ph_min, soil_ph_max=self.soil_ph_max,
+                          soil_salinity_min=self.soil_salinity_min, soil_salinity_max=self.soil_salinity_max
+                          )
+
+        session.add(new_plant)
+        session.commit()

@@ -1,4 +1,5 @@
 import json
+import os
 
 import requests
 from pyg2plot import Plot
@@ -106,9 +107,11 @@ def plants_buttons_callback(btn, plant_id, plant_name):
         a = Update_Plant(plant_id)
         a.delete_plant()
         body(plants)
-    if btn == 'Edit ' + plant_name:
+    elif btn == 'Edit ' + plant_name:
         print('Edit ' + plant_name)
         body(edit_plant, plant_id)
+    elif btn == 'Change Picture':
+        body(edit_plant_picture, plant_id, plant_name)
 
 
 def header():
@@ -203,6 +206,18 @@ def edit_user(id=None):
         else:
             body(main_menu)
 
+def edit_plant_picture(id, name):
+    clear(scope='header')
+    img = file_upload("Select a picture:", accept=".jpg", multiple=False)
+
+
+    output_dir = "images/plants"
+    filename = os.path.join(output_dir, name + ".jpg")
+    with open(filename, 'wb') as f:
+        f.write(img['content'])
+
+    print(id)
+    print(name)
 
 def edit_user_pass(id):
     clear(scope='header')
@@ -247,12 +262,16 @@ def edit_plant(id=None):
         input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max if plant else '', type=FLOAT),
 
     ])
-    a = Update_Plant(plant.id, plant_input['name'], plant_input['description'], plant_input['temp_min'],
+    a = Update_Plant(id, plant_input['name'], plant_input['description'], plant_input['temp_min'],
                      plant_input['temp_max'], plant_input['light_min'], plant_input['light_max'],
                      plant_input['hum_min'], plant_input['hum_max'], plant_input['ph_min'], plant_input['ph_max'],
                      plant_input['sal_min'], plant_input['sal_max'])
-    a.update_plant()
-    body(plants, plant.id)
+    if id is not None:
+        a.update_plant()
+        body(plants, plant.id)
+    else:
+        a.create_plant()
+        body(plants)
 
 
 def plants(id=None):
@@ -264,7 +283,7 @@ def plants(id=None):
         plants = session.query(Plant).filter(Plant.id == id)
     for plant in plants:
         put_html("<h2>" + plant.name + " - " + plant.description + "</h2>")
-        img = open('images/plants/' + plant.image, 'rb').read()
+        img = open('images/plants/' + plant.name + ".jpg", 'rb').read()
         put_row([
             # put_column([
             #     put_code(plant.name),
@@ -300,7 +319,7 @@ def plants(id=None):
                     put_code('Salinity max: ' + str(plant.soil_salinity_max) + " dS/m"),
 
                 ]),
-                put_buttons(['Edit ' + plant.name, 'Delete ' + plant.name],
+                put_buttons(['Edit ' + plant.name, 'Change Picture', 'Delete ' + plant.name],
                             onclick=lambda btn, plant_id=plant.id, plant_name=plant.name: plants_buttons_callback(btn,
                                                                                                                   plant_id,
                                                                                                                   plant_name)).style(
