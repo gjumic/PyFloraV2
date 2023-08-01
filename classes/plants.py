@@ -3,7 +3,7 @@ from database.Database import *
 
 class Update_Plant():
 
-    def __init__(self, id, name, description, temperature_min, temperature_max, light_min, light_max, soil_humidity_min, soil_humidity_max, soil_ph_min, soil_ph_max, soil_salinity_min, soil_salinity_max):
+    def __init__(self, id, name=None, description=None, temperature_min=None, temperature_max=None, light_min=None, light_max=None, soil_humidity_min=None, soil_humidity_max=None, soil_ph_min=None, soil_ph_max=None, soil_salinity_min=None, soil_salinity_max=None):
         self.id = id
         self.name = name
         self.description = description
@@ -39,12 +39,8 @@ class Update_Plant():
 
         session.commit()
 
-class Delete_Plant():
-
-    def __init__(self, id):
-        self.id = id
-
     def delete_plant(self):
         print("Delete Plant with id: " + str(self.id))
         session.query(Plant).filter(Plant.id == self.id).delete()
         session.commit()
+

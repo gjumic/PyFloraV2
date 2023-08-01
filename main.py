@@ -103,7 +103,7 @@ def users_buttons_callback(btn, user_id):
 def plants_buttons_callback(btn, plant_id, plant_name):
     if btn == 'Delete ' + plant_name:
         print('Delete ' + plant_name)
-        a = Delete_Plant(plant_id)
+        a = Update_Plant(plant_id)
         a.delete_plant()
         body(plants)
     if btn == 'Edit ' + plant_name:
