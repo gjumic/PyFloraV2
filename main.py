@@ -216,8 +216,7 @@ def edit_plant_picture(id, name):
     with open(filename, 'wb') as f:
         f.write(img['content'])
 
-    print(id)
-    print(name)
+    body(plants, id)
 
 def edit_user_pass(id):
     clear(scope='header')
