@@ -24,7 +24,7 @@ class Plant(Base):
     __tablename__ = "plants"
 
     id = db.Column("id", db.Integer, primary_key=True)
-    name = db.Column("name", db.String, nullable=False, unique=True)
+    name = db.Column("name", db.String, nullable=False, unique=False)
     description = db.Column("description", db.String, nullable=True, unique=False)
 
     temperature_min = db.Column("temperature_min", db.Integer, nullable=False, unique=False)
