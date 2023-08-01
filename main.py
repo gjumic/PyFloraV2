@@ -106,6 +106,9 @@ def plants_buttons_callback(btn, plant_id, plant_name):
         print('Delete ' + plant_name)
         a = Update_Plant(plant_id)
         a.delete_plant()
+        image_path = 'images/plants/' + plant_name + '.jpg'
+        if os.path.exists(image_path):
+            os.remove(image_path)
         body(plants)
     elif btn == 'Edit ' + plant_name:
         print('Edit ' + plant_name)
@@ -184,8 +187,8 @@ def edit_user(id=None):
     user = session.query(User).filter(User.id == id).one_or_none()
     if id == None:
         user_input = input_group("Add User", [
-            input('Username', name='username', validate=check_input),
-            input('Password', name='password', validate=check_input),
+            input('Username', name='username', validate=check_user_input),
+            input('Password', name='password', validate=check_user_input),
             input('First Name', name='first_name'),
             input('Last Name', name='last_name'),
 
@@ -222,7 +225,7 @@ def edit_user_pass(id):
     clear(scope='header')
     user = session.query(User).filter(User.id == id).one_or_none()
     user_input = input_group("Add or Edit User", [
-        input('Password', name='password', validate=check_input),
+        input('Password', name='password', validate=check_user_input),
 
     ])
     a = Update_User(user.id, None, hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), None, None)
@@ -282,14 +285,17 @@ def plants(id=None):
         plants = session.query(Plant).filter(Plant.id == id)
     for plant in plants:
         put_html("<h2>" + plant.name + " - " + plant.description + "</h2>")
-        img = open('images/plants/' + plant.name + ".jpg", 'rb').read()
+
+        image_path = 'images/plants/' + plant.name + '.jpg'
+        empty_image_path = 'images/plants/empty.png'
+
+        if os.path.exists(image_path):
+            img = open(image_path, 'rb').read()
+        else:
+            img = open(empty_image_path, 'rb').read()
+
         put_row([
-            # put_column([
-            #     put_code(plant.name),
-            #     put_code(plant.description),
-            # ]), None,
             put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
-            # put_html("<br>")
         ])
         put_row([
             put_column([
