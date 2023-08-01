@@ -12,9 +12,9 @@ new_config = db_model.Config(city=city)
 session.add(new_config)
 
 user_data = [
-    ("admin", hashlib.md5("2241".encode('utf-8')).hexdigest(), "", "", True),
-    ("goran", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Goran", "Jumic", True),
-    ("pero", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Pero", "", False),
+    ("admin", hashlib.md5("2241".encode('utf-8')).hexdigest(), "", ""),
+    ("goran", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Goran", "Jumic"),
+    ("pero", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Pero", ""),
 ]
 
 plant_data = [
@@ -44,8 +44,8 @@ pot_data = [
 ]
 
 for record in user_data:
-    username, password, first_name, last_name, active = record
-    new_user = db_model.User(username=username, password=password, first_name=first_name, last_name=last_name, active=active)
+    username, password, first_name, last_name = record
+    new_user = db_model.User(username=username, password=password, first_name=first_name, last_name=last_name)
     session.add(new_user)
 
 for record in plant_data:

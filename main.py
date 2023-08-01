@@ -7,6 +7,7 @@ from pywebio.input import *
 from pywebio.output import *
 from pywebio.output import put_html
 
+from classes import db_model
 from classes.db_model import *
 
 admin_login = False
@@ -81,7 +82,12 @@ def users_buttons_callback(btn, user_id):
         else:
             a = Delete_User(user_id)
             a.delete_user()
-        body(admin_panel)
+            body(admin_panel)
+    elif btn == 'Edit':
+        body(edit_user, user_id)
+    elif btn == 'Change Password':
+        body(edit_user_pass, user_id)
+
 
 
 def plants_buttons_callback(btn, plant_id, plant_name):
@@ -114,6 +120,11 @@ def footer():
 
 
 def admin_panel():
+    put_text("Application Configuration")
+    config = session.query(Config).filter(Config.id == 1).one_or_none()
+    put_text(config.city)
+    put_button('Change', onclick=lambda: body(edit_configuration)).style("text-align: right; align-self: center;")
+
     users = session.query(User).all()
     put_row([
         put_column([
@@ -132,13 +143,63 @@ def admin_panel():
                     put_code(user.username), None,  # None represents the space between the output
                     put_code(user.first_name), None,
                     put_code(user.last_name), None,
-                    put_buttons(['Edit', 'Delete'],
+                    put_buttons(['Edit', 'Change Password', 'Delete'],
                                 onclick=lambda btn, user_id=user.id: users_buttons_callback(btn,
                                                                                             user_id)).style(
                         "text-align: right; align-self: center;")
                 ]),
             ]), None,
         ])
+    put_button('Add User', onclick=lambda: body(edit_user)).style("text-align: right; align-self: center;")
+
+def edit_configuration():
+    clear(scope='header')
+    config = session.query(Config).filter(Config.id == 1).one_or_none()
+    config_input = input_group("Edit Application Configuration", [
+        input('City', name='city', value=config.city),
+
+    ])
+    a = Update_Configuration(config_input['city'])
+    a.update_configuration()
+    body(admin_panel)
+
+def edit_user(id=None):
+    clear(scope='header')
+    user = session.query(User).filter(User.id == id).one_or_none()
+    if id == None:
+        user_input = input_group("Add User", [
+            input('Username', name='username'),
+            input('Password', name='password'),
+            input('First Name', name='first_name'),
+            input('Last Name', name='last_name'),
+
+        ])
+        a = Update_User(None, user_input['username'], hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), user_input['first_name'], user_input['last_name'] )
+        a.create_user()
+    else:
+        user_input = input_group("Edit User", [
+            input('Username', name='username', value=user.username),
+            input('First Name', name='first_name', value=user.first_name),
+            input('Last Name', name='last_name', value=user.last_name),
+
+        ])
+        a = Update_User(user.id, user_input['username'], None, user_input['first_name'], user_input['last_name'])
+        a.update_user()
+
+    body(graf)
+
+
+def edit_user_pass(id):
+    clear(scope='header')
+    user = session.query(User).filter(User.id == id).one_or_none()
+    user_input = input_group("Add or Edit User", [
+        input('Password', name='password'),
+
+    ])
+    a = Update_User(user.id, None, hashlib.md5(user_input['password'].encode('utf-8')).hexdigest(), None, None)
+    a.update_password()
+    toast(user.username + ' new password is ' + str(user_input['password']) + ' 🔔')
+    body(graf)
 
 
 def pots():

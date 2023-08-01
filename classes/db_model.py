@@ -18,7 +18,6 @@ class User(Base):
     password = db.Column("password", db.String, nullable=False, unique=False)
     first_name = db.Column("first_name", db.String, nullable=True, unique=False)
     last_name = db.Column("last_name", db.String, nullable=True, unique=False)
-    active = db.Column("active", db.Boolean)
 
 
 class Plant(Base):
@@ -86,6 +85,60 @@ class Delete_User():
         print("Delete User with id: " + str(self.id))
         session.query(User).filter(User.id == self.id).delete()
         session.commit()
+
+class Update_User():
+
+    def __init__(self, id, username, password, first_name, last_name):
+        self.id = id
+        self.username = username
+        self.password = password
+        self.first_name = first_name
+        self.last_name = last_name
+
+    def create_user(self):
+        print("Create User: " + self.username)
+        username = self.username
+        password = self.password
+        first_name = self.first_name
+        last_name = self.last_name
+        new_user = User(username=username, password=password, first_name=first_name, last_name=last_name)
+
+        session.add(new_user)
+        session.commit()
+
+    def update_user(self):
+        print("Update User with id: " + str(self.id))
+        user = session.query(User).filter(User.id == self.id).one_or_none()
+        user.username = self.username
+        user.first_name = self.first_name
+        user.last_name = self.last_name
+
+        session.commit()
+
+    def update_password(self):
+        print("Update User Password with id: " + str(self.id))
+        user = session.query(User).filter(User.id == self.id).one_or_none()
+        user.password = self.password
+        session.commit()
+
+class Update_Configuration():
+
+    def __init__(self, city):
+        self.city = city
+
+    def update_configuration(self):
+        config = session.query(Config).filter(Config.id == 1).one_or_none()
+        config.city = self.city
+
+        session.commit()
+
+
+
+
+
+
+
+
 
 class Delete_Plant():
 
