@@ -225,13 +225,16 @@ def edit_user(id=None):
 
 def edit_plant_picture(id, name):
     clear(scope='header')
-    img = file_upload("Select a picture:", accept=".jpg", multiple=False)
+    put_info("Just press Submit without choosing file to skip changing image!")
+    img = file_upload("Select a picture:", accept=".jpg", multiple=False, placeholder="Choose any .jpg file")
 
-
-    output_dir = "images/plants"
-    filename = os.path.join(output_dir, name + ".jpg")
-    with open(filename, 'wb') as f:
-        f.write(img['content'])
+    if img is None:
+        toast('Skipped changing image 🔔')
+    else:
+        output_dir = "images/plants"
+        filename = os.path.join(output_dir, name + ".jpg")
+        with open(filename, 'wb') as f:
+            f.write(img['content'])
 
     body(plants, id)
 
