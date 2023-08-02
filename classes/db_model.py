@@ -1,4 +1,5 @@
 from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship
 
 from database.Database import *
 from database.MySetup import Base
@@ -52,7 +53,6 @@ class Pot(Base):
     id = db.Column("id", db.Integer, primary_key=True)
     name = db.Column("name", db.String, nullable=False, unique=True)
     description = db.Column("description", db.String, nullable=True, unique=False)
-    status = db.Column("status", db.String, nullable=False, unique=False, default='empty')
     plant_id = db.Column("plant_id", db.Integer, ForeignKey('plants.id'))
 
     temperature = db.Column("temperature", db.Integer, nullable=False, unique=False)
@@ -60,3 +60,5 @@ class Pot(Base):
     soil_hum = db.Column("soil_hum", db.Float, nullable=False, unique=False)
     soil_ph = db.Column("soil_ph", db.Float, nullable=False, unique=False)
     soil_sal = db.Column("soil_sal", db.Float, nullable=False, unique=False)
+
+    plant = relationship("Plant")

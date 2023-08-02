@@ -33,16 +33,17 @@ plant_data = [
 ]
 
 pot_data = [
-    ("Pot 1", "Small clay pot", "occupied", 25, 6000, 0.6, 6.8, 0.3, 1),
-    ("Pot 2", "Terracotta pot", "occupied", 20, 4000, 0.8, 7.2, 0.2, 2),
-    ("Pot 3", "Ceramic pot", "empty", 22, 5000, 0.7, 6.5, 0.1, 3),
-    ("Pot 4", "Plastic pot", "occupied", 18, 800, 0.9, 6.0, 0.4, 4),
-    ("Pot 5", "Glass pot", "empty", 24, 2000, 0.5, 6.2, 0.1, 5),
-    ("Pot 6", "Metal pot", "empty", 28, 3000, 0.4, 7.0, 0.2, 6),
-    ("Pot 7", "Wooden pot", "occupied", 22, 1500, 0.7, 5.8, 0.2, 7),
-    ("Pot 8", "Cement pot", "empty", 20, 3500, 0.6, 6.5, 0.3, 8),
-    ("Pot 9", "Plastic pot", "occupied", 18, 400, 0.5, 6.5, 0.3, 9),
-    ("Pot 10", "Terracotta pot", "empty", 23, 3000, 0.7, 6.8, 0.2, 10),
+    ("Pot 1", "Small clay pot", 25, 6000, 0.6, 6.8, 0.3, 1),
+    ("Pot 2", "Terracotta pot", 20, 4000, 0.8, 7.2, 0.2, 2),
+    ("Pot 3", "Ceramic pot", 22, 5000, 0.7, 6.5, 0.1, 3),
+    ("Pot 4", "Plastic pot", 18, 800, 0.9, 6.0, 0.4, 4),
+    ("Pot 5", "Glass pot", 24, 2000, 0.5, 6.2, 0.1, 5),
+    ("Pot 6", "Metal pot", 28, 3000, 0.4, 7.0, 0.2, 6),
+    ("Pot 7", "Wooden pot", 22, 1500, 0.7, 5.8, 0.2, 7),
+    ("Pot 8", "Cement pot", 20, 3500, 0.6, 6.5, 0.3, 8),
+    ("Pot 9", "Plastic pot", 18, 400, 0.5, 6.5, 0.3, 9),
+    ("Pot 10", "test pot", 23, 3000, 0.7, 6.8, 0.2, 0),
+    ("Pot 11", "Terracotta pot", 23, 3000, 0.7, 6.8, 0.2, 10),
 ]
 
 for record in user_data:
@@ -60,8 +61,8 @@ for record in plant_data:
     session.add(new_plant)
 
 for record in pot_data:
-    name, description, status, temp, light, soil_hum, soil_ph, soil_sal, plant_id = record
-    new_pot = db_model.Pot(name=name, description=description, status=status,
+    name, description, temp, light, soil_hum, soil_ph, soil_sal, plant_id = record
+    new_pot = db_model.Pot(name=name, description=description,
                            temperature=temp, light=light, soil_hum=soil_hum, soil_ph=soil_ph, soil_sal=soil_sal,
                            plant_id=plant_id)
     session.add(new_pot)

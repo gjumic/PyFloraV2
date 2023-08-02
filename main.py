@@ -8,11 +8,13 @@ from pywebio.input import *
 from pywebio.output import *
 from pywebio.output import put_html
 from sqlalchemy import desc
+from sqlalchemy.orm import joinedload
 
 from classes.configuration import *
 from classes.db_model import *
 from classes.login import *
 from classes.plants import *
+from classes.pots import Update_Pot
 from classes.users import *
 
 admin_login = False
@@ -20,8 +22,79 @@ user_login = False
 
 config(title="PyFlora Plant Monitor", theme="dark")
 
-img = open('images/logo2.png', 'rb').read()
+constant_image_dir = "images/"
+constant_plants_image_dir = "images/plants/"
 
+img = open(constant_image_dir + 'logo2.png', 'rb').read()
+
+
+########################################################################################################################
+# Main Screen
+########################################################################################################################
+
+def main_menu():
+    a = Update_Configuration()
+    a.get_configuration()
+    put_html("<h1>Welcome to PyFlora</h1>")
+    put_html("<b>Location: " + a.city + "</b><br>").style(
+        "text-align: right; align-self: center;")
+    put_html("<b>Latitude: " + str(a.latitude) + "</b><br>").style(
+        "text-align: right; align-self: center;")
+    put_html("<b>Longitude: " + str(a.longitude) + "</b><br>").style(
+        "text-align: right; align-self: center;")
+    plot_temps(a.latitude, a.longitude, a.city)
+
+
+def header():
+    with use_scope('header', clear=True):
+        put_image(img, format="png").style("align-self: center;")
+        if admin_login:
+            put_buttons(['Main Menu', 'Pots', 'Plants', 'My Profile', 'Admin Panel', 'Logout'],
+                        onclick=lambda btn: main_buttons_callback(btn)).style(
+                "text-align: right; align-self: center;")
+        if user_login:
+            put_buttons(['Main Menu', 'Pots', 'Plants', 'My Profile', 'Logout'],
+                        onclick=lambda btn: main_buttons_callback(btn)).style(
+                "text-align: right; align-self: center;")
+
+
+def footer():
+    with use_scope('footer', clear=True):
+        put_text("Made by Goran Jumić")
+
+
+def main_buttons_callback(btn):
+    if btn == 'Main Menu':
+        body(main_menu)
+    elif btn == 'Pots':
+        body(pots)
+    elif btn == 'Plants':
+        body(plants)
+    elif btn == 'My Profile':
+        body(edit_user, my_id)
+    elif btn == 'Admin Panel':
+        body(admin_panel)
+    elif btn == 'Logout':
+        body(logout)
+
+
+def body(body_function, *args, **kwargs):
+    clear(scope='header')
+    clear(scope='main')
+    clear(scope='footer')
+    header()
+    try:
+        with use_scope('main'):
+            return body_function(*args, **kwargs)
+    except Exception as e:
+        print(e)
+    finally:
+        footer()
+
+
+########################################################################################################################
+# Login Screen
+########################################################################################################################
 
 def login_form():
     global admin_login
@@ -57,99 +130,9 @@ def logout():
     body(login_form)
 
 
-def body(body_function, *args, **kwargs):
-    clear(scope='header')
-    clear(scope='main')
-    clear(scope='footer')
-    header()
-    try:
-        with use_scope('main'):
-            return body_function(*args, **kwargs)
-    except Exception as e:
-        print(e)
-    finally:
-        footer()
-
-
-def main_buttons_callback(btn):
-    if btn == 'Main Menu':
-        body(main_menu)
-    elif btn == 'Pots':
-        body(pots)
-    elif btn == 'Plants':
-        body(plants)
-    elif btn == 'My Profile':
-        body(edit_user, my_id)
-    elif btn == 'Admin Panel':
-        body(admin_panel)
-    elif btn == 'Logout':
-        body(logout)
-
-
-def users_buttons_callback(btn, user_id):
-    if btn == 'Delete':
-        if user_id == 1:
-            toast('Cannot Delete Admin User! 🔔')
-        else:
-            popup('Confirm User Deletion', [
-                put_button('Confirm Deletion', onclick=lambda: delete_user_handler(user_id))
-
-            ])
-    elif btn == 'Edit':
-        body(edit_user, user_id)
-    elif btn == 'Change Password':
-        body(edit_user_pass, user_id)
-
-def delete_user_handler(user_id):
-    # This function will be called when the user clicks the 'Confirm Deletion' button
-    print('Delete ' + str(user_id))
-    a = Update_User(user_id)
-    a.delete_user()
-    close_popup()
-    toast('User Deleted! 🔔')
-    body(admin_panel)
-
-
-def plants_buttons_callback(btn, plant_id, plant_name):
-    if btn == 'Delete ' + plant_name:
-        popup('Confirm Plant Deletion', [
-            put_button('Confirm ' + plant_name + ' Deletion', onclick=lambda: delete_plant_handler(plant_id, plant_name))
-
-        ])
-    elif btn == 'Edit ' + plant_name:
-        print('Edit ' + plant_name)
-        body(edit_plant, plant_id)
-    elif btn == 'Change Picture':
-        body(edit_plant_picture, plant_id, plant_name)
-
-def delete_plant_handler(plant_id, plant_name):
-    a = Update_Plant(plant_id)
-    a.delete_plant()
-    image_path = 'images/plants/' + plant_name + '.jpg'
-    if os.path.exists(image_path):
-        os.remove(image_path)
-    close_popup()
-    toast(plant_name + ' Deleted! 🔔')
-    body(plants)
-
-
-def header():
-    with use_scope('header', clear=True):
-        put_image(img, format="png").style("align-self: center;")
-        if admin_login:
-            put_buttons(['Main Menu', 'Pots', 'Plants', 'My Profile', 'Admin Panel', 'Logout'],
-                        onclick=lambda btn: main_buttons_callback(btn)).style(
-                "text-align: right; align-self: center;")
-        if user_login:
-            put_buttons(['Main Menu', 'Pots', 'Plants', 'My Profile', 'Logout'],
-                        onclick=lambda btn: main_buttons_callback(btn)).style(
-                "text-align: right; align-self: center;")
-
-
-def footer():
-    with use_scope('footer', clear=True):
-        put_text("Made by Goran Jumić")
-
+########################################################################################################################
+# Admin Panel and My Profile
+########################################################################################################################
 
 def admin_panel():
     put_html("<h1>Admin Panel</h1>")
@@ -176,38 +159,6 @@ def admin_panel():
     put_html("<h2>User Configuration</h2>")
     put_table(user_list, header=['Username', 'First Name', 'Last Name', 'Actions'])
     put_button('Add User', onclick=lambda: body(edit_user)).style("align-self: center;")
-
-
-def edit_configuration():
-    clear(scope='header')
-    config = session.query(Config).filter(Config.id == 1).one_or_none()
-    config_input = input_group("Edit Application Configuration", [
-        input('Location', name='city', value=config.city, required=True),
-        input('Latitude', name='latitude', value=config.latitude, required=True),
-        input('Longitude', name='longitude', value=config.longitude, required=True),
-
-    ])
-    a = Update_Configuration(config_input['city'], config_input['latitude'].replace(',', '.'),
-                             config_input['longitude'].replace(',', '.'))
-    a.update_configuration()
-    body(admin_panel)
-
-
-def check_user_input(input):
-    user = session.query(User).filter(User.username == input).one_or_none()
-    if user is not None:
-        return 'Username already exists'
-
-
-def check_plant_input(input):
-    plant = session.query(Plant).filter(Plant.name == input).one_or_none()
-    if plant is not None:
-        return 'Plant already exists'
-
-
-def check_plant_measurement(input):
-    if input is None:
-        return 'Input cannot be none'
 
 
 def edit_user(id=None):
@@ -245,22 +196,6 @@ def edit_user(id=None):
             body(main_menu)
 
 
-def edit_plant_picture(id, name):
-    clear(scope='header')
-    put_info("Just press Submit without choosing file to skip changing image!")
-    img = file_upload("Select a picture:", accept=".jpg", multiple=False, placeholder="Choose any .jpg file")
-
-    if img is None:
-        toast('Skipped changing image 🔔')
-    else:
-        output_dir = "images/plants"
-        filename = os.path.join(output_dir, name + ".jpg")
-        with open(filename, 'wb') as f:
-            f.write(img['content'])
-
-    body(plants, id)
-
-
 def edit_user_pass(id):
     clear(scope='header')
     user = session.query(User).filter(User.id == id).one_or_none()
@@ -281,8 +216,241 @@ def edit_user_pass(id):
         body(main_menu)
 
 
-def pots():
+def edit_configuration():
+    clear(scope='header')
+    config = session.query(Config).filter(Config.id == 1).one_or_none()
+    config_input = input_group("Edit Application Configuration", [
+        input('Location', name='city', value=config.city, required=True),
+        input('Latitude', name='latitude', value=config.latitude, required=True),
+        input('Longitude', name='longitude', value=config.longitude, required=True),
+
+    ])
+    a = Update_Configuration(config_input['city'], config_input['latitude'].replace(',', '.'),
+                             config_input['longitude'].replace(',', '.'))
+    a.update_configuration()
+    body(admin_panel)
+
+
+def users_buttons_callback(btn, user_id):
+    if btn == 'Delete':
+        if user_id == 1:
+            toast('Cannot Delete Admin User! 🔔')
+        else:
+            popup('Confirm User Deletion', [
+                put_button('Confirm Deletion', onclick=lambda: delete_user_handler(user_id))
+
+            ])
+    elif btn == 'Edit':
+        body(edit_user, user_id)
+    elif btn == 'Change Password':
+        body(edit_user_pass, user_id)
+
+
+def delete_user_handler(user_id):
+    print('Delete ' + str(user_id))
+    a = Update_User(user_id)
+    a.delete_user()
+    close_popup()
+    toast('User Deleted! 🔔')
+    body(admin_panel)
+
+
+def check_user_input(input):
+    user = session.query(User).filter(User.username == input).one_or_none()
+    if user is not None:
+        return 'Username already exists'
+
+
+########################################################################################################################
+# Pots
+########################################################################################################################
+
+def pots(id=None):
     put_html("<h1>My Pots</h1>")
+    if id == None:
+        pots = session.query(Pot).options(joinedload(Pot.plant)).order_by(desc(Pot.id)).all()
+        put_button('Add New Pot', onclick=lambda: body(edit_pot)).style("text-align: right; align-self: center;")
+    else:
+        pots = session.query(Pot).filter(Pot.id == id)
+    for pot in pots:
+        if pot.plant_id == 0:
+            pot_name = 'Pot is empty'
+            pot_image = 'empty.png'
+        else:
+            pot_name = pot.plant.name
+            pot_image = pot.plant.name + '.jpg'
+
+        put_html("<h2>" + pot.name + " - " + pot.description + "</h2>")
+
+        image_path = constant_plants_image_dir + pot_image
+        img = open(image_path, 'rb').read()
+
+        put_row([
+            put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
+        ])
+        content = [put_code('Plant Name: ' + pot_name)]
+
+        # Check if pot.plant_id is not equal to 0
+        if pot.plant_id != 0:
+            # Add the content to the list if the condition is met
+            content.append(put_code('Plant Description: ' + pot.plant.description))
+            content.append(put_code('Temp: ' + str(pot.temperature) + " \u00b0C"))
+            content.append(put_code('Light: ' + str(pot.light) + " lx"))
+            content.append(put_code('Humidity: ' + str(pot.soil_hum) + " %"))
+            content.append(put_code('pH: ' + str(pot.soil_ph)))
+            content.append(put_code('Salinity: ' + str(pot.soil_sal) + " dS/m"))
+
+            content.append(put_buttons(['Details', 'Edit', 'Change Plant', 'Detach Plant', 'Delete'],
+                                       onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
+                                                                                                                   pot_id,
+                                                                                                                   pot_name)).style(
+                "text-align: right; align-self: center;"))
+        else:
+            content.append(put_buttons(['Edit', 'Attach Plant', 'Delete'],
+                                       onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
+                                                                                                                   pot_id,
+                                                                                                                   pot_name)).style(
+                "text-align: right; align-self: center;"))
+        # Put the content in a column and then a row
+        put_row([put_column(content)])
+
+
+def edit_pot(id=None):
+    clear(scope='header')
+    pot = None
+    header_input = "Add Pot"
+    name_readonly = False
+    if id is not None:
+        pot = session.query(Pot).filter(Pot.id == id).one_or_none()
+        header_input = "Edit Pot"
+        name_readonly = True
+    else:
+        put_info("Leave Name empty to skip creating the Pot!")
+
+    pot_input = input_group(header_input, [
+        input('Name', name='name', value=pot.name if pot else '', readonly=name_readonly,
+              validate=check_pot_input if not name_readonly else None),
+        input('Description', name='description', value=pot.description if pot else ''),
+
+    ])
+    if pot_input['name'] == "":
+        toast('Skipped creating Pot 🔔')
+        body(pots)
+    else:
+        a = Update_Pot(id, pot_input['name'], pot_input['description'])
+        if id is not None:
+            a.update_pot()
+            body(pots, pot.id)
+        else:
+            a.create_pot()
+            body(pots)
+
+
+def edit_pot_attach(id, plant_id=None):
+    if plant_id is None:
+        clear(scope='header')
+        plants = session.query(Plant).order_by(desc(Plant.id)).all()
+        put_text("test")
+        options = {plant.name: plant.id for plant in plants}
+        options['Empty'] = 0
+        selected_name = select('Select a plant:', options=options)
+        selected_id = options[selected_name]
+    else:
+        selected_id = 0
+    a = Update_Pot(id, None, None, selected_id, None, None, None, None, None)
+    a.attach_plant()
+    body(pots, id)
+
+
+def check_pot_input(input):
+    pot = session.query(Pot).filter(Pot.name == input).one_or_none()
+    if pot is not None:
+        return 'Plant already exists'
+
+
+def delete_pot_handler(pot_id, pot_name):
+    a = Update_Pot(pot_id)
+    a.delete_pot()
+    close_popup()
+    toast(pot_name + ' Deleted! 🔔')
+    body(pots)
+
+
+def pots_buttons_callback(btn, pot_id, pot_name):
+    if btn == 'Attach Plant' or btn == 'Change Plant':
+        body(edit_pot_attach, pot_id)
+    elif btn == 'Detach Plant':
+        body(edit_pot_attach, pot_id, 0)
+    elif btn == 'Delete':
+        popup('Confirm Pot Deletion', [
+            put_button('Confirm ' + pot_name + ' Deletion', onclick=lambda: delete_pot_handler(pot_id, pot_name))
+
+        ])
+    elif btn == 'Details':
+        body(pots, pot_id)
+    elif btn == "Edit":
+        body(edit_pot, pot_id)
+
+
+########################################################################################################################
+# Plants
+########################################################################################################################
+
+def plants(id=None):
+    put_html("<h1>My Plants</h1>")
+    if id == None:
+        plants = session.query(Plant).order_by(desc(Plant.id)).all()
+        put_button('Add New Plant', onclick=lambda: body(edit_plant)).style("text-align: right; align-self: center;")
+    else:
+        plants = session.query(Plant).filter(Plant.id == id)
+    for plant in plants:
+        put_html("<h2>" + plant.name + " - " + plant.description + "</h2>")
+
+        image_path = constant_plants_image_dir + plant.name + '.jpg'
+        empty_image_path = constant_plants_image_dir + 'empty.png'
+
+        if os.path.exists(image_path):
+            img = open(image_path, 'rb').read()
+        else:
+            img = open(empty_image_path, 'rb').read()
+
+        put_row([
+            put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
+        ])
+        put_row([
+            put_column([
+                put_row([
+                    put_code('Temp min: ' + str(plant.temperature_min) + " \u00b0C"), None,
+                    put_code('Temp max: ' + str(plant.temperature_max) + " \u00b0C"),
+
+                ]),
+                put_row([
+                    put_code('Light min: ' + str(plant.light_min) + " lx"), None,
+                    put_code('Light max: ' + str(plant.light_max) + " lx"),
+
+                ]),
+                put_row([
+                    put_code('Humidity min: ' + str(plant.soil_humidity_min) + " %"), None,
+                    put_code('Humidity max: ' + str(plant.soil_humidity_max) + " %"),
+
+                ]),
+                put_row([
+                    put_code('pH min: ' + str(plant.soil_ph_min)), None,
+                    put_code('ph max: ' + str(plant.soil_ph_max)),
+
+                ]),
+                put_row([
+                    put_code('Salinity min: ' + str(plant.soil_salinity_min) + " dS/m"), None,
+                    put_code('Salinity max: ' + str(plant.soil_salinity_max) + " dS/m"),
+
+                ]),
+                put_buttons(['Edit ' + plant.name, 'Change Picture', 'Delete ' + plant.name],
+                            onclick=lambda btn, plant_id=plant.id, plant_name=plant.name: plants_buttons_callback(btn,
+                                                                                                                  plant_id,
+                                                                                                                  plant_name)).style(
+                    "text-align: right; align-self: center;")
+            ]), None,
+        ])
 
 
 def edit_plant(id=None):
@@ -340,62 +508,61 @@ def edit_plant(id=None):
             body(plants)
 
 
-def plants(id=None):
-    put_html("<h1>My Plants</h1>")
-    if id == None:
-        plants = session.query(Plant).order_by(desc(Plant.id)).all()
-        put_button('Add New Plant', onclick=lambda: body(edit_plant)).style("text-align: right; align-self: center;")
+def edit_plant_picture(id, name):
+    clear(scope='header')
+    put_info("Just press Submit without choosing file to skip changing image!")
+    img = file_upload("Select a picture:", accept=".jpg", multiple=False, placeholder="Choose any .jpg file")
+
+    if img is None:
+        toast('Skipped changing image 🔔')
     else:
-        plants = session.query(Plant).filter(Plant.id == id)
-    for plant in plants:
-        put_html("<h2>" + plant.name + " - " + plant.description + "</h2>")
+        output_dir = constant_plants_image_dir
+        filename = os.path.join(output_dir, name + ".jpg")
+        with open(filename, 'wb') as f:
+            f.write(img['content'])
 
-        image_path = 'images/plants/' + plant.name + '.jpg'
-        empty_image_path = 'images/plants/empty.png'
+    body(plants, id)
 
-        if os.path.exists(image_path):
-            img = open(image_path, 'rb').read()
-        else:
-            img = open(empty_image_path, 'rb').read()
 
-        put_row([
-            put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
+def plants_buttons_callback(btn, plant_id, plant_name):
+    if btn == 'Delete ' + plant_name:
+        popup('Confirm Plant Deletion', [
+            put_button('Confirm ' + plant_name + ' Deletion',
+                       onclick=lambda: delete_plant_handler(plant_id, plant_name))
+
         ])
-        put_row([
-            put_column([
-                put_row([
-                    put_code('Temp min: ' + str(plant.temperature_min) + " \u00b0C"), None,
-                    put_code('Temp max: ' + str(plant.temperature_max) + " \u00b0C"),
+    elif btn == 'Edit ' + plant_name:
+        print('Edit ' + plant_name)
+        body(edit_plant, plant_id)
+    elif btn == 'Change Picture':
+        body(edit_plant_picture, plant_id, plant_name)
 
-                ]),
-                put_row([
-                    put_code('Light min: ' + str(plant.light_min) + " lx"), None,
-                    put_code('Light max: ' + str(plant.light_max) + " lx"),
 
-                ]),
-                put_row([
-                    put_code('Humidity min: ' + str(plant.soil_humidity_min) + " %"), None,
-                    put_code('Humidity max: ' + str(plant.soil_humidity_max) + " %"),
+def delete_plant_handler(plant_id, plant_name):
+    a = Update_Plant(plant_id)
+    a.delete_plant()
+    image_path = constant_plants_image_dir + plant_name + '.jpg'
+    if os.path.exists(image_path):
+        os.remove(image_path)
+    close_popup()
+    toast(plant_name + ' Deleted! 🔔')
+    body(plants)
 
-                ]),
-                put_row([
-                    put_code('pH min: ' + str(plant.soil_ph_min)), None,
-                    put_code('ph max: ' + str(plant.soil_ph_max)),
 
-                ]),
-                put_row([
-                    put_code('Salinity min: ' + str(plant.soil_salinity_min) + " dS/m"), None,
-                    put_code('Salinity max: ' + str(plant.soil_salinity_max) + " dS/m"),
+def check_plant_input(input):
+    plant = session.query(Plant).filter(Plant.name == input).one_or_none()
+    if plant is not None:
+        return 'Plant already exists'
 
-                ]),
-                put_buttons(['Edit ' + plant.name, 'Change Picture', 'Delete ' + plant.name],
-                            onclick=lambda btn, plant_id=plant.id, plant_name=plant.name: plants_buttons_callback(btn,
-                                                                                                                  plant_id,
-                                                                                                                  plant_name)).style(
-                    "text-align: right; align-self: center;")
-            ]), None,
-        ])
 
+def check_plant_measurement(input):
+    if input is None:
+        return 'Input cannot be none'
+
+
+########################################################################################################################
+# Plot Graphs
+########################################################################################################################
 
 def plot_temps(latitude, longitude, location):
     put_html("<h2>Daily Forecast in " + location + "</h2>")
@@ -442,18 +609,8 @@ def plot_temps(latitude, longitude, location):
     put_html(line.render_notebook(), scope='main')
 
 
-def main_menu():
-    a = Update_Configuration()
-    a.get_configuration()
-    put_html("<h1>Welcome to PyFlora</h1>")
-    put_html("<b>Location: " + a.city + "</b><br>").style(
-        "text-align: right; align-self: center;")
-    put_html("<b>Latitude: " + str(a.latitude) + "</b><br>").style(
-        "text-align: right; align-self: center;")
-    put_html("<b>Longitude: " + str(a.longitude) + "</b><br>").style(
-        "text-align: right; align-self: center;")
-    plot_temps(a.latitude, a.longitude, a.city)
-
-
+########################################################################################################################
+# Start App
+########################################################################################################################
 put_scope('header', content=[header()])
 put_scope('main', content=[body(login_form)])
