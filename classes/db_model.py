@@ -37,8 +37,8 @@ class Plant(Base):
     light_min = db.Column("light_min", db.Integer, nullable=True, unique=False)
     light_max = db.Column("light_max", db.Integer, nullable=True, unique=False)
 
-    soil_humidity_min = db.Column("soil_humidity_min", db.Float, nullable=True, unique=False)
-    soil_humidity_max = db.Column("soil_humidity_max", db.Float, nullable=True, unique=False)
+    soil_humidity_min = db.Column("soil_humidity_min", db.Integer, nullable=True, unique=False)
+    soil_humidity_max = db.Column("soil_humidity_max", db.Integer, nullable=True, unique=False)
 
     soil_ph_min = db.Column("soil_ph_min", db.Float, nullable=True, unique=False)
     soil_ph_max = db.Column("soil_ph_max", db.Float, nullable=True, unique=False)
@@ -55,10 +55,18 @@ class Pot(Base):
     description = db.Column("description", db.String, nullable=True, unique=False)
     plant_id = db.Column("plant_id", db.Integer, ForeignKey('plants.id'))
 
+    plant = relationship("Plant")
+
+
+class Measurements(Base):
+    __tablename__ = "measurements"
+
+    id = db.Column("id", db.Integer, primary_key=True)
+    date = db.Column("date", db.DateTime, nullable=False, unique=False)
+    pot_id = db.Column("pot_id", db.Integer, nullable=False, unique=False)
+
     temperature = db.Column("temperature", db.Integer, nullable=False, unique=False)
     light = db.Column("light", db.Integer, nullable=False, unique=False)
-    soil_hum = db.Column("soil_hum", db.Float, nullable=False, unique=False)
+    soil_hum = db.Column("soil_hum", db.Integer, nullable=False, unique=False)
     soil_ph = db.Column("soil_ph", db.Float, nullable=False, unique=False)
     soil_sal = db.Column("soil_sal", db.Float, nullable=False, unique=False)
-
-    plant = relationship("Plant")

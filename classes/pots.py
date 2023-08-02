@@ -9,11 +9,6 @@ class Update_Pot():
         self.name = name
         self.description = description
         self.plant_id = plant_id
-        self.temperature = temperature
-        self.light = light
-        self.soil_hum = soil_hum
-        self.soil_ph = soil_ph
-        self.soil_sal = soil_sal
         self.id = id
 
     def update_pot(self):
@@ -38,8 +33,7 @@ class Update_Pot():
 
     def create_pot(self):
         print("Create Pot: " + self.name)
-        new_pot = Pot(name=self.name, description=self.description, temperature=0, light=0, soil_hum=0, soil_ph=0,
-                      soil_sal=0, plant_id=0)
+        new_pot = Pot(name=self.name, description=self.description, plant_id=0)
 
         session.add(new_pot)
         session.commit()

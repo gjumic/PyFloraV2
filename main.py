@@ -9,10 +9,13 @@ from pywebio.output import *
 from pywebio.output import put_html
 from sqlalchemy import desc
 from sqlalchemy.orm import joinedload
+import random
+from datetime import datetime, timedelta
 
 from classes.configuration import *
 from classes.db_model import *
 from classes.login import *
+from classes.measurements import Create_Measurements
 from classes.plants import *
 from classes.pots import Update_Pot
 from classes.users import *
@@ -265,15 +268,20 @@ def check_user_input(input):
 # Pots
 ########################################################################################################################
 
+
+
+
 def pots(id=None):
     put_html("<h1>My Pots</h1>")
     if id == None:
-        pots = session.query(Pot).options(joinedload(Pot.plant)).order_by(desc(Pot.id)).all()
+        # pots = session.query(Pot).options(joinedload(Pot.plant)).order_by(desc(Pot.id)).all()
+        pots = session.query(Pot).order_by(desc(Pot.id)).all()
         put_button('Add New Pot', onclick=lambda: body(edit_pot), color="success").style(
             "text-align: right; align-self: center;")
     else:
         pots = session.query(Pot).filter(Pot.id == id)
     for pot in pots:
+
         if pot.plant_id == 0:
             pot_image = 'empty.png'
         else:
@@ -288,29 +296,66 @@ def pots(id=None):
             put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
         ])
 
-
         if pot.plant_id != 0:
-            measurement_name = [[span(pot.plant.name, col=5)]]
-            measurement_description = [[span(pot.plant.description, col=5)]]
-            measurement_table = [['Temp (\u00b0C)', 'Light (lx)', 'Humidity (%)', 'pH', 'Salinity (dS/m)'],
-                                 [str(pot.temperature), str(pot.light), str(pot.soil_hum), str(pot.soil_ph),
-                                  str(pot.soil_sal)]]
-            measurement_name.extend(measurement_description)
-            measurement_name.extend(measurement_table)
-
-            put_table(measurement_name)
-            put_buttons(['Details', 'Edit', 'Change Plant', 'Detach Plant', 'Delete'],
+            last_measurement = session.query(Measurements).filter(Measurements.pot_id == pot.id).order_by(desc(Measurements.id)).first()
+            table_html = f"""
+                            <table style="margin: 0 auto; display: block; text-align: center;">
+                                <tbody><tr>
+                                    <th colspan="5" rowspan="1"><span style="white-space: pre-wrap;">{pot.plant.name}</span></th> 
+                                </tr>
+                                  <tr>
+                                    <td colspan="5" rowspan="1"><span style="white-space: pre-wrap;">{pot.plant.description}</span></td> 
+                                  </tr>
+                                  <tr>
+                                    <td><span style="white-space: pre-wrap;">Temp (°C)<br>{pot.plant.temperature_min} - {pot.plant.temperature_max}</span></td> 
+                                    <td><span style="white-space: pre-wrap;">Light (lx)<br>{pot.plant.light_min} - {pot.plant.light_max}</span></td> 
+                                    <td><span style="white-space: pre-wrap;">Humidity (%)<br>{pot.plant.soil_humidity_min} - {pot.plant.soil_humidity_max}</span></td> 
+                                    <td><span style="white-space: pre-wrap;">pH<br>{pot.plant.soil_ph_min} - {pot.plant.soil_ph_max}</span></td> 
+                                    <td><span style="white-space: pre-wrap;">Salinity (dS/m)<br>{pot.plant.soil_salinity_min} - {pot.plant.soil_salinity_max}</span></td> 
+                                  </tr>
+                                  <tr>
+                                    <td><span style="white-space: pre-wrap;">{calculate_range_int(last_measurement.temperature, pot.plant.temperature_min, pot.plant.temperature_max, 1)}</span></td> 
+                                    <td><span style="white-space: pre-wrap;">{calculate_range_int(last_measurement.light, pot.plant.light_min, pot.plant.light_max, 1)}</span></td> 
+                                    <td><span style="white-space: pre-wrap;">{calculate_range_int(last_measurement.soil_hum, pot.plant.soil_humidity_min, pot.plant.soil_humidity_max, 1)}</span></td> 
+                                    <td><span style="white-space: pre-wrap;">{calculate_range_float(last_measurement.soil_ph, pot.plant.soil_ph_min, pot.plant.soil_ph_max)}</span></td> 
+                                    <td><span style="white-space: pre-wrap;">{calculate_range_float(last_measurement.soil_sal, pot.plant.soil_salinity_min, pot.plant.soil_salinity_max)}</span></td> 
+                                  </tr>
+                            </tbody></table><br>
+                    """
+            put_html(table_html)
+            put_buttons(['Details', 'Edit', 'Sync with Sensor', 'Fix Plant', 'Change Plant', 'Detach Plant', 'Delete'],
                         onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
                                                                                                     pot_id,
                                                                                                     pot_name)).style(
                         "text-align: right; align-self: center;")
         else:
-            put_text("Pot is empty")
+            table_html = f"""
+                            <table style="margin: 0 auto; display: block; text-align: center;">
+                                <tbody><tr>
+                                    <th colspan="5" rowspan="1"><span style="white-space: pre-wrap;">Pot is empty!</span></th> 
+                                </tr>
+                            </tbody></table><br>
+                    """
+            put_html(table_html)
             put_buttons(['Edit', 'Attach Plant', 'Delete'],
                         onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
                                                                                                     pot_id,
                                                                                                     pot_name)).style(
                         "text-align: right; align-self: center;")
+
+def calculate_range_int(measurement, measurement_min, measurement_max, step):
+    if measurement in range(measurement_min, measurement_max + step):
+        measurement_status = f"<p style='color: green;'>{str(measurement)} (OK)</p>"
+    else:
+        measurement_status = f"<p style='color: red;'>{str(measurement)} (Not OK)</p>"
+    return measurement_status
+
+def calculate_range_float(measurement, measurement_min, measurement_max):
+    if measurement_min <= measurement <= measurement_max and round(measurement,2)==measurement:
+        measurement_status = f"<p style='color: green;'>{str(measurement)} (OK)</p>"
+    else:
+        measurement_status = f"<p style='color: red;'>{str(measurement)} (Not OK)</p>"
+    return measurement_status
 
 
 def edit_pot(id=None):
@@ -348,14 +393,13 @@ def edit_pot_attach(id, plant_id=None):
     if plant_id is None:
         clear(scope='header')
         plants = session.query(Plant).order_by(desc(Plant.id)).all()
-        put_text("test")
         options = {plant.name: plant.id for plant in plants}
         options['Empty'] = 0
         selected_name = select('Select a plant:', options=options)
         selected_id = options[selected_name]
     else:
         selected_id = 0
-    a = Update_Pot(id, None, None, selected_id, None, None, None, None, None)
+    a = Update_Pot(id, None, None, selected_id,)
     a.attach_plant()
     body(pots, id)
 
@@ -367,6 +411,8 @@ def check_pot_input(input):
 
 
 def delete_pot_handler(pot_id, pot_name):
+    b = Create_Measurements(None, pot_id)
+    b.delete_measurements()
     a = Update_Pot(pot_id)
     a.delete_pot()
     close_popup()
@@ -389,7 +435,41 @@ def pots_buttons_callback(btn, pot_id, pot_name):
         body(pots, pot_id)
     elif btn == "Edit":
         body(edit_pot, pot_id)
+    elif btn == "Sync with Sensor":
+        generate_measurement(pot_id)
+        body(pots, pot_id)
+    elif btn == "Fix Plant":
+        generate_measurement(pot_id, True)
+        body(pots, pot_id)
 
+def generate_measurement(pot_id, fix_pot=False):
+
+    if fix_pot:
+        pot = session.query(Pot).filter(Pot.id == pot_id).one()
+        temperature = random.randint(pot.plant.temperature_min, pot.plant.temperature_max)
+        light = random.randint(pot.plant.light_min, pot.plant.light_max)
+        soil_hum = random.randint(pot.plant.soil_humidity_min, pot.plant.soil_humidity_max)
+        soil_ph = round(random.uniform(pot.plant.soil_ph_min, pot.plant.soil_ph_max), 2)
+        soil_sal = round(random.uniform(pot.plant.soil_salinity_min, pot.plant.soil_salinity_max), 2)
+    else:
+        temperature = random.randint(10, 40)
+        light = random.randint(1, 100000)
+        soil_hum = random.randint(10, 100)
+        soil_ph = round(random.uniform(0.0, 14.0), 2)
+        soil_sal = round(random.uniform(0.1, 5.8), 2)
+
+    date = datetime.now()
+    new_measurement = Measurements(
+        date=date,
+        pot_id=pot_id,
+        temperature=temperature,
+        light=light,
+        soil_hum=soil_hum,
+        soil_ph=soil_ph,
+        soil_sal=soil_sal
+    )
+    session.add(new_measurement)
+    session.commit()
 
 ########################################################################################################################
 # Plants

@@ -3,6 +3,8 @@ import hashlib
 import database.MySetup
 from classes import db_model
 from database.Database import *
+import random
+from datetime import datetime, timedelta
 
 database.MySetup.Base.metadata.create_all(bind=db_engine)
 
@@ -33,18 +35,47 @@ plant_data = [
 ]
 
 pot_data = [
-    ("Pot 1", "Small clay pot", 25, 6000, 0.6, 6.8, 0.3, 1),
-    ("Pot 2", "Terracotta pot", 20, 4000, 0.8, 7.2, 0.2, 2),
-    ("Pot 3", "Ceramic pot", 22, 5000, 0.7, 6.5, 0.1, 3),
-    ("Pot 4", "Plastic pot", 18, 800, 0.9, 6.0, 0.4, 4),
-    ("Pot 5", "Glass pot", 24, 2000, 0.5, 6.2, 0.1, 5),
-    ("Pot 6", "Metal pot", 28, 3000, 0.4, 7.0, 0.2, 6),
-    ("Pot 7", "Wooden pot", 22, 1500, 0.7, 5.8, 0.2, 7),
-    ("Pot 8", "Cement pot", 20, 3500, 0.6, 6.5, 0.3, 8),
-    ("Pot 9", "Plastic pot", 18, 400, 0.5, 6.5, 0.3, 9),
-    ("Pot 10", "test pot", 23, 3000, 0.7, 6.8, 0.2, 0),
-    ("Pot 11", "Terracotta pot", 23, 3000, 0.7, 6.8, 0.2, 10),
+    ("Pot 1", "Small clay pot", 1),
+    ("Pot 2", "Terracotta pot", 2),
+    ("Pot 3", "Ceramic pot", 3),
+    ("Pot 4", "Plastic pot", 4),
+    ("Pot 5", "Glass pot", 5),
+    ("Pot 6", "Metal pot", 6),
+    ("Pot 7", "Wooden pot", 7),
+    ("Pot 8", "Cement pot", 8),
+    ("Pot 9", "Plastic pot", 9),
+    ("Pot 10", "test pot", 0),
+    ("Pot 11", "Terracotta pot", 10),
 ]
+
+def generate_random_measurements(pot_id, start_date, num_measurements):
+    measurements = []
+    for i in range(num_measurements):
+        date = start_date + timedelta(days=i)
+        temperature = random.randint(10, 40)
+        light = random.randint(1, 100000)
+        soil_hum = random.randint(10, 100)
+        soil_ph = round(random.uniform(0.0, 14.0), 2)
+        soil_sal = round(random.uniform(0.1, 5.8), 2)
+        measurements.append((date, pot_id, temperature, light, soil_hum, soil_ph, soil_sal))  # Fix the order of elements here
+    return measurements
+
+start_date = datetime(2023, 7, 25)
+num_measurements_per_pot = 5
+
+measurement_data = (
+    generate_random_measurements(1, start_date, num_measurements_per_pot),
+    generate_random_measurements(2, start_date, num_measurements_per_pot),
+    generate_random_measurements(3, start_date, num_measurements_per_pot),
+    generate_random_measurements(4, start_date, num_measurements_per_pot),
+    generate_random_measurements(5, start_date, num_measurements_per_pot),
+    generate_random_measurements(6, start_date, num_measurements_per_pot),
+    generate_random_measurements(7, start_date, num_measurements_per_pot),
+    generate_random_measurements(8, start_date, num_measurements_per_pot),
+    generate_random_measurements(9, start_date, num_measurements_per_pot),
+    generate_random_measurements(10, start_date, num_measurements_per_pot),
+    generate_random_measurements(11, start_date, num_measurements_per_pot)
+)
 
 for record in user_data:
     username, password, first_name, last_name = record
@@ -61,10 +92,23 @@ for record in plant_data:
     session.add(new_plant)
 
 for record in pot_data:
-    name, description, temp, light, soil_hum, soil_ph, soil_sal, plant_id = record
-    new_pot = db_model.Pot(name=name, description=description,
-                           temperature=temp, light=light, soil_hum=soil_hum, soil_ph=soil_ph, soil_sal=soil_sal,
-                           plant_id=plant_id)
+    name, description, plant_id = record
+    new_pot = db_model.Pot(name=name, description=description,plant_id=plant_id)
+
     session.add(new_pot)
+
+for measurement_list in measurement_data:
+    for record in measurement_list:
+        date, pot_id, temperature, light, soil_hum, soil_ph, soil_sal = record
+        new_measurement = db_model.Measurements(
+            date=date,
+            pot_id=pot_id,
+            temperature=temperature,
+            light=light,
+            soil_hum=soil_hum,
+            soil_ph=soil_ph,
+            soil_sal=soil_sal
+        )
+        session.add(new_measurement)
 
 session.commit()
