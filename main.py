@@ -144,7 +144,7 @@ def admin_panel():
         ['Latitude', config.latitude],
         ['Longitude', config.longitude],
     ])
-    put_button('Change', onclick=lambda: body(edit_configuration)).style("align-self: center;")
+    put_button('Change', color="warning", onclick=lambda: body(edit_configuration)).style("align-self: center;")
 
     users = session.query(User).all()
     user_list = []
@@ -158,7 +158,7 @@ def admin_panel():
         user_list.append(user_data)
     put_html("<h2>User Configuration</h2>")
     put_table(user_list, header=['Username', 'First Name', 'Last Name', 'Actions'])
-    put_button('Add User', onclick=lambda: body(edit_user)).style("align-self: center;")
+    put_button('Add User', color="success", onclick=lambda: body(edit_user)).style("align-self: center;")
 
 
 def edit_user(id=None):
@@ -237,7 +237,7 @@ def users_buttons_callback(btn, user_id):
             toast('Cannot Delete Admin User! 🔔')
         else:
             popup('Confirm User Deletion', [
-                put_button('Confirm Deletion', onclick=lambda: delete_user_handler(user_id))
+                put_button('Confirm Deletion', color="danger", onclick=lambda: delete_user_handler(user_id))
 
             ])
     elif btn == 'Edit':
@@ -269,15 +269,14 @@ def pots(id=None):
     put_html("<h1>My Pots</h1>")
     if id == None:
         pots = session.query(Pot).options(joinedload(Pot.plant)).order_by(desc(Pot.id)).all()
-        put_button('Add New Pot', onclick=lambda: body(edit_pot)).style("text-align: right; align-self: center;")
+        put_button('Add New Pot', onclick=lambda: body(edit_pot), color="success").style(
+            "text-align: right; align-self: center;")
     else:
         pots = session.query(Pot).filter(Pot.id == id)
     for pot in pots:
         if pot.plant_id == 0:
-            pot_name = 'Pot is empty'
             pot_image = 'empty.png'
         else:
-            pot_name = pot.plant.name
             pot_image = pot.plant.name + '.jpg'
 
         put_html("<h2>" + pot.name + " - " + pot.description + "</h2>")
@@ -288,31 +287,30 @@ def pots(id=None):
         put_row([
             put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
         ])
-        content = [put_code('Plant Name: ' + pot_name)]
 
-        # Check if pot.plant_id is not equal to 0
+
         if pot.plant_id != 0:
-            # Add the content to the list if the condition is met
-            content.append(put_code('Plant Description: ' + pot.plant.description))
-            content.append(put_code('Temp: ' + str(pot.temperature) + " \u00b0C"))
-            content.append(put_code('Light: ' + str(pot.light) + " lx"))
-            content.append(put_code('Humidity: ' + str(pot.soil_hum) + " %"))
-            content.append(put_code('pH: ' + str(pot.soil_ph)))
-            content.append(put_code('Salinity: ' + str(pot.soil_sal) + " dS/m"))
+            measurement_name = [[span(pot.plant.name, col=5)]]
+            measurement_description = [[span(pot.plant.description, col=5)]]
+            measurement_table = [['Temp (\u00b0C)', 'Light (lx)', 'Humidity (%)', 'pH', 'Salinity (dS/m)'],
+                                 [str(pot.temperature), str(pot.light), str(pot.soil_hum), str(pot.soil_ph),
+                                  str(pot.soil_sal)]]
+            measurement_name.extend(measurement_description)
+            measurement_name.extend(measurement_table)
 
-            content.append(put_buttons(['Details', 'Edit', 'Change Plant', 'Detach Plant', 'Delete'],
-                                       onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
-                                                                                                                   pot_id,
-                                                                                                                   pot_name)).style(
-                "text-align: right; align-self: center;"))
+            put_table(measurement_name)
+            put_buttons(['Details', 'Edit', 'Change Plant', 'Detach Plant', 'Delete'],
+                        onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
+                                                                                                    pot_id,
+                                                                                                    pot_name)).style(
+                        "text-align: right; align-self: center;")
         else:
-            content.append(put_buttons(['Edit', 'Attach Plant', 'Delete'],
-                                       onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
-                                                                                                                   pot_id,
-                                                                                                                   pot_name)).style(
-                "text-align: right; align-self: center;"))
-        # Put the content in a column and then a row
-        put_row([put_column(content)])
+            put_text("Pot is empty")
+            put_buttons(['Edit', 'Attach Plant', 'Delete'],
+                        onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
+                                                                                                    pot_id,
+                                                                                                    pot_name)).style(
+                        "text-align: right; align-self: center;")
 
 
 def edit_pot(id=None):
@@ -383,7 +381,8 @@ def pots_buttons_callback(btn, pot_id, pot_name):
         body(edit_pot_attach, pot_id, 0)
     elif btn == 'Delete':
         popup('Confirm Pot Deletion', [
-            put_button('Confirm ' + pot_name + ' Deletion', onclick=lambda: delete_pot_handler(pot_id, pot_name))
+            put_button('Confirm ' + pot_name + ' Deletion', color="danger",
+                       onclick=lambda: delete_pot_handler(pot_id, pot_name))
 
         ])
     elif btn == 'Details':
@@ -400,7 +399,8 @@ def plants(id=None):
     put_html("<h1>My Plants</h1>")
     if id == None:
         plants = session.query(Plant).order_by(desc(Plant.id)).all()
-        put_button('Add New Plant', onclick=lambda: body(edit_plant)).style("text-align: right; align-self: center;")
+        put_button('Add New Plant', color="success", onclick=lambda: body(edit_plant)).style(
+            "text-align: right; align-self: center;")
     else:
         plants = session.query(Plant).filter(Plant.id == id)
     for plant in plants:
@@ -527,7 +527,7 @@ def edit_plant_picture(id, name):
 def plants_buttons_callback(btn, plant_id, plant_name):
     if btn == 'Delete ' + plant_name:
         popup('Confirm Plant Deletion', [
-            put_button('Confirm ' + plant_name + ' Deletion',
+            put_button('Confirm ' + plant_name + ' Deletion', color="danger",
                        onclick=lambda: delete_plant_handler(plant_id, plant_name))
 
         ])
