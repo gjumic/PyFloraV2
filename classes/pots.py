@@ -37,3 +37,5 @@ class Update_Pot():
 
         session.add(new_pot)
         session.commit()
+
+        return new_pot.id

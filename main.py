@@ -281,7 +281,10 @@ def pots(id=None):
     else:
         pots = session.query(Pot).filter(Pot.id == id)
     for pot in pots:
-
+        if id is not None:
+            all_measurements = session.query(Measurements).filter(Measurements.pot_id == pot.id)
+            for mer in all_measurements:
+                print(mer.temperature)
         if pot.plant_id == 0:
             pot_image = 'empty.png'
         else:
@@ -385,7 +388,8 @@ def edit_pot(id=None):
             a.update_pot()
             body(pots, pot.id)
         else:
-            a.create_pot()
+            created_pot_id = a.create_pot()
+            generate_measurement(created_pot_id)
             body(pots)
 
 
