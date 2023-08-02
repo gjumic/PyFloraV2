@@ -1,5 +1,7 @@
 import json
 import os
+import random
+from datetime import datetime, timedelta
 
 import requests
 from pyg2plot import Plot
@@ -7,17 +9,14 @@ from pywebio import *
 from pywebio.input import *
 from pywebio.output import *
 from pywebio.output import put_html
-from sqlalchemy import desc
-from sqlalchemy.orm import joinedload
-import random
-from datetime import datetime, timedelta
+from sqlalchemy import desc, asc
 
 from classes.configuration import *
 from classes.db_model import *
 from classes.login import *
-from classes.measurements import Create_Measurements
+from classes.measurements import *
 from classes.plants import *
-from classes.pots import Update_Pot
+from classes.pots import *
 from classes.users import *
 
 admin_login = False
@@ -292,11 +291,6 @@ def pots(id=None):
         put_row([
             put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
         ])
-        if id is not None:
-            put_tabs([
-                {'title': 'Line', 'content': plot_measurements(pot.id, "line")},
-                {'title': 'Bar', 'content': plot_measurements(pot.id, "bar")},
-            ])
         if pot.plant_id != 0:
             last_measurement = session.query(Measurements).filter(Measurements.pot_id == pot.id).order_by(
                 desc(Measurements.id)).first()
@@ -325,12 +319,11 @@ def pots(id=None):
                             </tbody></table><br>
                     """
             put_html(table_html)
-            put_buttons(['Details', 'Edit', 'Sync with Sensor', 'Fix Plant', 'Change Plant', 'Detach Plant', 'Delete'],
+            put_buttons(['Graphs', 'Edit', 'Sync with Sensor', 'Fix Plant', 'Change Plant', 'Detach Plant', 'Delete'],
                         onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
                                                                                                     pot_id,
                                                                                                     pot_name)).style(
                 "text-align: right; align-self: center;")
-
         else:
             table_html = f"""
                             <table style="margin: 0 auto; display: block; text-align: center;">
@@ -437,8 +430,6 @@ def pots_buttons_callback(btn, pot_id, pot_name):
                        onclick=lambda: delete_pot_handler(pot_id, pot_name))
 
         ])
-    elif btn == 'Details':
-        body(pots, pot_id)
     elif btn == "Edit":
         body(edit_pot, pot_id)
     elif btn == "Sync with Sensor":
@@ -447,6 +438,8 @@ def pots_buttons_callback(btn, pot_id, pot_name):
     elif btn == "Fix Plant":
         generate_measurement(pot_id, True)
         body(pots, pot_id)
+    elif btn == "Graphs":
+        plot_measurements(pot_id, "line")
 
 
 def generate_measurement(pot_id, fix_pot=False):
@@ -464,7 +457,7 @@ def generate_measurement(pot_id, fix_pot=False):
         soil_ph = round(random.uniform(0.0, 14.0), 2)
         soil_sal = round(random.uniform(0.1, 5.8), 2)
 
-    date = datetime.now()
+    date = datetime.now() + timedelta(seconds=1)
     new_measurement = Measurements(
         date=date,
         pot_id=pot_id,
@@ -690,25 +683,22 @@ def plot_temps(latitude, longitude, location):
                 "stroke": "#5B8FF9",
                 "lineWidth": 2,
             }
-        }
+        },
+        "height": 300,
     })
 
     put_html(line.render_notebook(), scope='main')
 
 
 def plot_measurements(pot_id, chart_type):
-    # Fetch measurements from your database for the specified pot_id
-    data = session.query(Measurements).filter_by(pot_id=pot_id).all()
+    last_10_desc = session.query(Measurements).filter_by(pot_id=pot_id).order_by(desc(Measurements.id)).limit(
+        10).subquery()
+    last_10_asc = session.query(last_10_desc).order_by(asc(last_10_desc.c.id)).subquery()
+    data = session.query(last_10_asc).all()
 
-    # If no data is found, return early or show an error message
-    if not data:
-        print(f"No data found for pot_id: {pot_id}.")
-        return
-
-    # Process the fetched data to get parameters over time by date
     params_data = {}
     for measurement in data:
-        date = measurement.date.date()  # Extract only the date part, ignoring the time
+        date = measurement.date
         if date not in params_data:
             params_data[date] = {
                 'temperature': [measurement.temperature],
@@ -724,7 +714,6 @@ def plot_measurements(pot_id, chart_type):
             params_data[date]['soil_ph'].append(measurement.soil_ph)
             params_data[date]['soil_sal'].append(measurement.soil_sal)
 
-    # Extracting the dates and corresponding parameter values for plotting
     dates = list(params_data.keys())
     temperature = [sum(params_data[date]['temperature']) / len(params_data[date]['temperature']) for date in dates]
     light = [sum(params_data[date]['light']) / len(params_data[date]['light']) for date in dates]
@@ -732,27 +721,30 @@ def plot_measurements(pot_id, chart_type):
     soil_ph = [sum(params_data[date]['soil_ph']) / len(params_data[date]['soil_ph']) for date in dates]
     soil_sal = [sum(params_data[date]['soil_sal']) / len(params_data[date]['soil_sal']) for date in dates]
 
-    # Combine the parameter data into a single list of dictionaries for PyG2Plot
-    result = [{'time': date.strftime("%Y-%m-%d"), 'type': 'Temperature', 'value': temp} for date, temp in
+    result = [{'time': date.strftime("%Y-%m-%d %H:%M:%S"), 'type': 'Temperature', 'value': temp} for date, temp in
               zip(dates, temperature)]
-    result += [{'time': date.strftime("%Y-%m-%d"), 'type': 'Light', 'value': l} for date, l in zip(dates, light)]
-    result += [{'time': date.strftime("%Y-%m-%d"), 'type': 'Soil Humidity', 'value': hum} for date, hum in
+
+    result += [{'time': date.strftime("%Y-%m-%d %H:%M:%S"), 'type': 'Light', 'value': l} for date, l in
+               zip(dates, light)]
+
+    result += [{'time': date.strftime("%Y-%m-%d %H:%M:%S"), 'type': 'Soil Humidity', 'value': hum} for date, hum in
                zip(dates, soil_hum)]
-    result += [{'time': date.strftime("%Y-%m-%d"), 'type': 'Soil pH', 'value': ph} for date, ph in zip(dates, soil_ph)]
-    result += [{'time': date.strftime("%Y-%m-%d"), 'type': 'Soil Salinity', 'value': sal} for date, sal in
+
+    result += [{'time': date.strftime("%Y-%m-%d %H:%M:%S"), 'type': 'Soil pH', 'value': ph} for date, ph in
+               zip(dates, soil_ph)]
+
+    result += [{'time': date.strftime("%Y-%m-%d %H:%M:%S"), 'type': 'Soil Salinity', 'value': sal} for date, sal in
                zip(dates, soil_sal)]
 
-    if chart_type == "line":
-        chart = Plot("Line")
-    elif chart_type == "bar":
-        chart = Plot("Column")
+    chart1 = Plot("Line")
+    chart2 = Plot("Column")
 
-    chart.set_options({
+    chart1.set_options({
         "title": f"Parameters over Time for Pot ID: {pot_id}",
         "data": result,
         "xField": "time",
         "yField": "value",
-        "seriesField": "type",  # Use 'type' field to distinguish between different parameters
+        "seriesField": "type",
         "label": {},
         "smooth": True,
         "lineStyle": {
@@ -766,10 +758,42 @@ def plot_measurements(pot_id, chart_type):
                 "stroke": "#5B8FF9",
                 "lineWidth": 2,
             }
-        }
+        },
+        "height": 400,  # Se
     })
 
-    put_html(chart.render_notebook(), scope='main')
+    chart2.set_options({
+        "title": f"Parameters over Time for Pot ID: {pot_id}",
+        "data": result,
+        "xField": "time",
+        "yField": "value",
+        "seriesField": "type",
+        "label": {},
+        "smooth": True,
+        "lineStyle": {
+            "lineWidth": 3,
+        },
+        "point": {
+            "size": 5,
+            "shape": 'diamond',
+            "style": {
+                "fill": "white",
+                "stroke": "#5B8FF9",
+                "lineWidth": 2,
+            }
+        },
+        "height": 400,
+    })
+
+    popup('Graph', [
+        put_tabs([
+            {'title': 'Line', 'content': put_html(chart1.render_notebook()).style("height: 500px;")},
+            {'title': 'Bar', 'content': put_html(chart2.render_notebook()).style("height: 500px;")},
+        ]),
+        put_html("<br>"),
+        put_button("Close", onclick=lambda: close_popup())
+    ], size="large")
+
 
 ########################################################################################################################
 # Start App

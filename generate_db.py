@@ -25,7 +25,7 @@ plant_data = [
     ("Rose", "Beautiful red flowers", 10, 30, 8, 80, 20, 80, 5.5, 7.0, 0.1, 0.5),
     ("Lavender", "Fragrant purple flowers", 5, 25, 8, 60, 20, 100, 6.0, 7.5, 0.1, 0.6),
     ("Snake Plant", "Tall green leaves", 15, 35, 5, 40, 30, 100, 5.5, 7.5, 0.1, 0.7),
-    ("Fern", "Lush green foliage", 18, 25, 8, 100, 40, 10, 5.0, 6.5, 0.1, 0.6),
+    ("Fern", "Lush green foliage", 18, 25, 8, 100, 40, 100, 5.0, 6.5, 0.1, 0.6),
     ("Cactus", "Spiny desert plant", 20, 40, 1, 120, 10, 70, 6.5, 8.0, 0.1, 0.8),
     ("Orchid", "Elegant and delicate flowers", 18, 30, 15, 80, 30, 80, 5.5, 6.5, 0.1, 0.7),
     ("Spider Plant", "Green and white striped leaves", 15, 28, 5, 40, 20, 90, 5.8, 7.2, 0.1, 0.6),
@@ -60,7 +60,7 @@ def generate_random_measurements(pot_id, start_date, num_measurements):
         measurements.append((date, pot_id, temperature, light, soil_hum, soil_ph, soil_sal))  # Fix the order of elements here
     return measurements
 
-start_date = datetime(2023, 7, 25)
+start_date = datetime(2023, 7, 1)
 num_measurements_per_pot = 5
 
 measurement_data = (
