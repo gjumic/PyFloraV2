@@ -566,10 +566,10 @@ def edit_plant(id=None):
               required=name_readonly, validate=check_plant_measurement),
         input('Maximum pH', name='ph_max', value=plant.soil_ph_max if plant else '0', type=FLOAT,
               required=name_readonly, validate=check_plant_measurement),
-        input('Salinity - dS/m', name='sal_min', value=plant.soil_salinity_min if plant else '0', type=FLOAT,
+        input('Minimum Salinity - dS/m', name='sal_min', value=plant.soil_salinity_min if plant else '0', type=FLOAT,
               required=name_readonly, validate=check_plant_measurement),
-        input('Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max if plant else '0', type=FLOAT,
-              required=name_readonly, validate=check_plant_measurement),
+        input('Maximum Salinity - dS/m', name='sal_max', value=plant.soil_salinity_max if plant else '0', type=FLOAT,
+              required=name_readonly, validate=check_plant_measurement)
 
     ])
     if plant_input['name'] == "":
@@ -586,7 +586,6 @@ def edit_plant(id=None):
         else:
             a.create_plant()
             body(plants)
-
 
 def edit_plant_picture(id, name):
     clear(scope='header')
