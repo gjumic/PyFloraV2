@@ -1,18 +1,6 @@
 from classes.db_model import Pot
 from database.Database import *
 
-
-class Delete_Pot():
-
-    def __init__(self, id):
-        self.id = id
-
-    def delete_pot(self):
-        print("Delete Pot with id: " + str(self.id))
-        session.query(Pot).filter(Pot.id == self.id).delete()
-        session.commit()
-
-
 class Update_Pot():
 
     def __init__(self, id, name, description, status, plant_id, temperature, light, soil_hum, soil_ph, soil_sal):
@@ -40,4 +28,9 @@ class Update_Pot():
         pot.soil_ph = self.soil_ph
         pot.soil_sal = self.soil_sal
 
+        session.commit()
+
+    def delete_pot(self):
+        print("Delete Pot with id: " + str(self.id))
+        session.query(Pot).filter(Pot.id == self.id).delete()
         session.commit()

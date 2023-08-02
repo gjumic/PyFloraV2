@@ -88,33 +88,49 @@ def main_buttons_callback(btn):
 
 def users_buttons_callback(btn, user_id):
     if btn == 'Delete':
-        print('Delete ' + str(user_id))
         if user_id == 1:
             toast('Cannot Delete Admin User! 🔔')
         else:
-            a = Update_User(user_id)
-            a.delete_user()
-            body(admin_panel)
+            popup('Confirm User Deletion', [
+                put_button('Confirm Deletion', onclick=lambda: delete_user_handler(user_id))
+
+            ])
     elif btn == 'Edit':
         body(edit_user, user_id)
     elif btn == 'Change Password':
         body(edit_user_pass, user_id)
 
+def delete_user_handler(user_id):
+    # This function will be called when the user clicks the 'Confirm Deletion' button
+    print('Delete ' + str(user_id))
+    a = Update_User(user_id)
+    a.delete_user()
+    close_popup()
+    toast('User Deleted! 🔔')
+    body(admin_panel)
+
 
 def plants_buttons_callback(btn, plant_id, plant_name):
     if btn == 'Delete ' + plant_name:
-        print('Delete ' + plant_name)
-        a = Update_Plant(plant_id)
-        a.delete_plant()
-        image_path = 'images/plants/' + plant_name + '.jpg'
-        if os.path.exists(image_path):
-            os.remove(image_path)
-        body(plants)
+        popup('Confirm Plant Deletion', [
+            put_button('Confirm ' + plant_name + ' Deletion', onclick=lambda: delete_plant_handler(plant_id, plant_name))
+
+        ])
     elif btn == 'Edit ' + plant_name:
         print('Edit ' + plant_name)
         body(edit_plant, plant_id)
     elif btn == 'Change Picture':
         body(edit_plant_picture, plant_id, plant_name)
+
+def delete_plant_handler(plant_id, plant_name):
+    a = Update_Plant(plant_id)
+    a.delete_plant()
+    image_path = 'images/plants/' + plant_name + '.jpg'
+    if os.path.exists(image_path):
+        os.remove(image_path)
+    close_popup()
+    toast(plant_name + ' Deleted! 🔔')
+    body(plants)
 
 
 def header():
