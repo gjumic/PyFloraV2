@@ -22,16 +22,16 @@ user_data = [
 ]
 
 plant_data = [
-    ("Rose", "Beautiful red flowers", 10, 30, 1000, 8000, 20, 80, 5.5, 7.0, 0.1, 0.5),
-    ("Lavender", "Fragrant purple flowers", 5, 25, 800, 6000, 20, 100, 6.0, 7.5, 0.1, 0.6),
-    ("Snake Plant", "Tall green leaves", 15, 35, 500, 4000, 30, 100, 5.5, 7.5, 0.1, 0.7),
-    ("Fern", "Lush green foliage", 18, 25, 800, 3000, 40, 10, 5.0, 6.5, 0.1, 0.6),
-    ("Cactus", "Spiny desert plant", 20, 40, 1000, 12000, 10, 70, 6.5, 8.0, 0.1, 0.8),
-    ("Orchid", "Elegant and delicate flowers", 18, 30, 1500, 8000, 30, 80, 5.5, 6.5, 0.1, 0.7),
-    ("Spider Plant", "Green and white striped leaves", 15, 28, 500, 4000, 20, 90, 5.8, 7.2, 0.1, 0.6),
-    ("Bamboo", "Fast-growing tall plant", 20, 35, 800, 5000, 20, 90, 6.0, 7.5, 0.1, 0.7),
-    ("Succulent", "Water-storing fleshy leaves", 15, 30, 500, 6000, 10, 60, 6.0, 7.5, 0.1, 0.7),
-    ("Aloe Vera", "Soothing gel-filled leaves", 20, 35, 500, 4000, 20, 80, 5.5, 7.0, 0.1, 0.6),
+    ("Rose", "Beautiful red flowers", 10, 30, 8, 80, 20, 80, 5.5, 7.0, 0.1, 0.5),
+    ("Lavender", "Fragrant purple flowers", 5, 25, 8, 60, 20, 100, 6.0, 7.5, 0.1, 0.6),
+    ("Snake Plant", "Tall green leaves", 15, 35, 5, 40, 30, 100, 5.5, 7.5, 0.1, 0.7),
+    ("Fern", "Lush green foliage", 18, 25, 8, 100, 40, 10, 5.0, 6.5, 0.1, 0.6),
+    ("Cactus", "Spiny desert plant", 20, 40, 1, 120, 10, 70, 6.5, 8.0, 0.1, 0.8),
+    ("Orchid", "Elegant and delicate flowers", 18, 30, 15, 80, 30, 80, 5.5, 6.5, 0.1, 0.7),
+    ("Spider Plant", "Green and white striped leaves", 15, 28, 5, 40, 20, 90, 5.8, 7.2, 0.1, 0.6),
+    ("Bamboo", "Fast-growing tall plant", 20, 35, 8, 50, 20, 90, 6.0, 7.5, 0.1, 0.7),
+    ("Succulent", "Water-storing fleshy leaves", 15, 30, 5, 60, 10, 60, 6.0, 7.5, 0.1, 0.7),
+    ("Aloe Vera", "Soothing gel-filled leaves", 20, 35, 5, 40, 20, 80, 5.5, 7.0, 0.1, 0.6),
 ]
 
 pot_data = [
@@ -53,7 +53,7 @@ def generate_random_measurements(pot_id, start_date, num_measurements):
     for i in range(num_measurements):
         date = start_date + timedelta(days=i)
         temperature = random.randint(10, 40)
-        light = random.randint(1, 100000)
+        light = random.randint(1, 100)
         soil_hum = random.randint(10, 100)
         soil_ph = round(random.uniform(0.0, 14.0), 2)
         soil_sal = round(random.uniform(0.1, 5.8), 2)

@@ -269,8 +269,6 @@ def check_user_input(input):
 ########################################################################################################################
 
 
-
-
 def pots(id=None):
     put_html("<h1>My Pots</h1>")
     if id == None:
@@ -281,10 +279,6 @@ def pots(id=None):
     else:
         pots = session.query(Pot).filter(Pot.id == id)
     for pot in pots:
-        if id is not None:
-            all_measurements = session.query(Measurements).filter(Measurements.pot_id == pot.id)
-            for mer in all_measurements:
-                print(mer.temperature)
         if pot.plant_id == 0:
             pot_image = 'empty.png'
         else:
@@ -298,9 +292,14 @@ def pots(id=None):
         put_row([
             put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
         ])
-
+        if id is not None:
+            put_tabs([
+                {'title': 'Line', 'content': plot_measurements(pot.id, "line")},
+                {'title': 'Bar', 'content': plot_measurements(pot.id, "bar")},
+            ])
         if pot.plant_id != 0:
-            last_measurement = session.query(Measurements).filter(Measurements.pot_id == pot.id).order_by(desc(Measurements.id)).first()
+            last_measurement = session.query(Measurements).filter(Measurements.pot_id == pot.id).order_by(
+                desc(Measurements.id)).first()
             table_html = f"""
                             <table style="margin: 0 auto; display: block; text-align: center;">
                                 <tbody><tr>
@@ -330,7 +329,8 @@ def pots(id=None):
                         onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
                                                                                                     pot_id,
                                                                                                     pot_name)).style(
-                        "text-align: right; align-self: center;")
+                "text-align: right; align-self: center;")
+
         else:
             table_html = f"""
                             <table style="margin: 0 auto; display: block; text-align: center;">
@@ -344,7 +344,8 @@ def pots(id=None):
                         onclick=lambda btn, pot_id=pot.id, pot_name=pot.name: pots_buttons_callback(btn,
                                                                                                     pot_id,
                                                                                                     pot_name)).style(
-                        "text-align: right; align-self: center;")
+                "text-align: right; align-self: center;")
+
 
 def calculate_range_int(measurement, measurement_min, measurement_max, step):
     if measurement in range(measurement_min, measurement_max + step):
@@ -353,8 +354,9 @@ def calculate_range_int(measurement, measurement_min, measurement_max, step):
         measurement_status = f"<p style='color: red;'>{str(measurement)} (Not OK)</p>"
     return measurement_status
 
+
 def calculate_range_float(measurement, measurement_min, measurement_max):
-    if measurement_min <= measurement <= measurement_max and round(measurement,2)==measurement:
+    if measurement_min <= measurement <= measurement_max and round(measurement, 2) == measurement:
         measurement_status = f"<p style='color: green;'>{str(measurement)} (OK)</p>"
     else:
         measurement_status = f"<p style='color: red;'>{str(measurement)} (Not OK)</p>"
@@ -403,7 +405,7 @@ def edit_pot_attach(id, plant_id=None):
         selected_id = options[selected_name]
     else:
         selected_id = 0
-    a = Update_Pot(id, None, None, selected_id,)
+    a = Update_Pot(id, None, None, selected_id, )
     a.attach_plant()
     body(pots, id)
 
@@ -446,8 +448,8 @@ def pots_buttons_callback(btn, pot_id, pot_name):
         generate_measurement(pot_id, True)
         body(pots, pot_id)
 
-def generate_measurement(pot_id, fix_pot=False):
 
+def generate_measurement(pot_id, fix_pot=False):
     if fix_pot:
         pot = session.query(Pot).filter(Pot.id == pot_id).one()
         temperature = random.randint(pot.plant.temperature_min, pot.plant.temperature_max)
@@ -457,7 +459,7 @@ def generate_measurement(pot_id, fix_pot=False):
         soil_sal = round(random.uniform(pot.plant.soil_salinity_min, pot.plant.soil_salinity_max), 2)
     else:
         temperature = random.randint(10, 40)
-        light = random.randint(1, 100000)
+        light = random.randint(1, 100)
         soil_hum = random.randint(10, 100)
         soil_ph = round(random.uniform(0.0, 14.0), 2)
         soil_sal = round(random.uniform(0.1, 5.8), 2)
@@ -474,6 +476,7 @@ def generate_measurement(pot_id, fix_pot=False):
     )
     session.add(new_measurement)
     session.commit()
+
 
 ########################################################################################################################
 # Plants
@@ -692,6 +695,81 @@ def plot_temps(latitude, longitude, location):
 
     put_html(line.render_notebook(), scope='main')
 
+
+def plot_measurements(pot_id, chart_type):
+    # Fetch measurements from your database for the specified pot_id
+    data = session.query(Measurements).filter_by(pot_id=pot_id).all()
+
+    # If no data is found, return early or show an error message
+    if not data:
+        print(f"No data found for pot_id: {pot_id}.")
+        return
+
+    # Process the fetched data to get parameters over time by date
+    params_data = {}
+    for measurement in data:
+        date = measurement.date.date()  # Extract only the date part, ignoring the time
+        if date not in params_data:
+            params_data[date] = {
+                'temperature': [measurement.temperature],
+                'light': [measurement.light],
+                'soil_hum': [measurement.soil_hum],
+                'soil_ph': [measurement.soil_ph],
+                'soil_sal': [measurement.soil_sal]
+            }
+        else:
+            params_data[date]['temperature'].append(measurement.temperature)
+            params_data[date]['light'].append(measurement.light)
+            params_data[date]['soil_hum'].append(measurement.soil_hum)
+            params_data[date]['soil_ph'].append(measurement.soil_ph)
+            params_data[date]['soil_sal'].append(measurement.soil_sal)
+
+    # Extracting the dates and corresponding parameter values for plotting
+    dates = list(params_data.keys())
+    temperature = [sum(params_data[date]['temperature']) / len(params_data[date]['temperature']) for date in dates]
+    light = [sum(params_data[date]['light']) / len(params_data[date]['light']) for date in dates]
+    soil_hum = [sum(params_data[date]['soil_hum']) / len(params_data[date]['soil_hum']) for date in dates]
+    soil_ph = [sum(params_data[date]['soil_ph']) / len(params_data[date]['soil_ph']) for date in dates]
+    soil_sal = [sum(params_data[date]['soil_sal']) / len(params_data[date]['soil_sal']) for date in dates]
+
+    # Combine the parameter data into a single list of dictionaries for PyG2Plot
+    result = [{'time': date.strftime("%Y-%m-%d"), 'type': 'Temperature', 'value': temp} for date, temp in
+              zip(dates, temperature)]
+    result += [{'time': date.strftime("%Y-%m-%d"), 'type': 'Light', 'value': l} for date, l in zip(dates, light)]
+    result += [{'time': date.strftime("%Y-%m-%d"), 'type': 'Soil Humidity', 'value': hum} for date, hum in
+               zip(dates, soil_hum)]
+    result += [{'time': date.strftime("%Y-%m-%d"), 'type': 'Soil pH', 'value': ph} for date, ph in zip(dates, soil_ph)]
+    result += [{'time': date.strftime("%Y-%m-%d"), 'type': 'Soil Salinity', 'value': sal} for date, sal in
+               zip(dates, soil_sal)]
+
+    if chart_type == "line":
+        chart = Plot("Line")
+    elif chart_type == "bar":
+        chart = Plot("Column")
+
+    chart.set_options({
+        "title": f"Parameters over Time for Pot ID: {pot_id}",
+        "data": result,
+        "xField": "time",
+        "yField": "value",
+        "seriesField": "type",  # Use 'type' field to distinguish between different parameters
+        "label": {},
+        "smooth": True,
+        "lineStyle": {
+            "lineWidth": 3,
+        },
+        "point": {
+            "size": 5,
+            "shape": 'diamond',
+            "style": {
+                "fill": "white",
+                "stroke": "#5B8FF9",
+                "lineWidth": 2,
+            }
+        }
+    })
+
+    put_html(chart.render_notebook(), scope='main')
 
 ########################################################################################################################
 # Start App
