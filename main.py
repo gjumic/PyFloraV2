@@ -35,9 +35,13 @@ img = open(constant_image_dir + 'logo2.png', 'rb').read()
 ########################################################################################################################
 
 def main_menu():
+    global login_username
+
     a = Update_Configuration()
     a.get_configuration()
     put_html("<h1>Welcome to PyFlora</h1>")
+    put_html("<b>User: " + login_username + "</b><br>").style(
+        "text-align: right; align-self: center;")
     put_html("<b>Location: " + a.city + "</b><br>").style(
         "text-align: right; align-self: center;")
     put_html("<b>Latitude: " + str(a.latitude) + "</b><br>").style(
@@ -51,11 +55,11 @@ def header():
     with use_scope('header', clear=True):
         put_image(img, format="png").style("align-self: center;")
         if admin_login:
-            put_buttons(['Main Menu', 'Pots', 'Plants', 'My Profile', 'Admin Panel', 'Logout'],
+            put_buttons(['Main Screen', 'Pots', 'Plants', 'My Profile', 'Admin Panel', 'Logout'],
                         onclick=lambda btn: main_buttons_callback(btn)).style(
                 "text-align: right; align-self: center;")
         if user_login:
-            put_buttons(['Main Menu', 'Pots', 'Plants', 'My Profile', 'Logout'],
+            put_buttons(['Main Screen', 'Pots', 'Plants', 'My Profile', 'Logout'],
                         onclick=lambda btn: main_buttons_callback(btn)).style(
                 "text-align: right; align-self: center;")
 
@@ -66,7 +70,7 @@ def footer():
 
 
 def main_buttons_callback(btn):
-    if btn == 'Main Menu':
+    if btn == 'Main Screen':
         body(main_menu)
     elif btn == 'Pots':
         body(pots)
@@ -102,11 +106,13 @@ def login_form():
     global admin_login
     global user_login
     global my_id
+    global login_username
     login_input = input_group("Login", [
-        input('Username', name='username', value="admin"),
-        input('Password', type="password", name='password', value="2241")])
+        input('Username', name='username'),
+        input('Password', type="password", name='password')])
     a = Login_User(None, login_input['username'], login_input['password'], False)
     a.login()
+    login_username = a.username
     if a.login_status == "admin":
         toast('Admin Login! 🔔')
         admin_login = True

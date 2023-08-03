@@ -1,4 +1,5 @@
 import hashlib
+import os
 
 import database.MySetup
 from classes import db_model
@@ -6,6 +7,7 @@ from database.Database import *
 import random
 from datetime import datetime, timedelta
 
+os.remove("database/database.db")
 database.MySetup.Base.metadata.create_all(bind=db_engine)
 
 city = "Osijek"
@@ -16,9 +18,9 @@ new_config = db_model.Config(city=city, latitude=latitude, longitude=longitude)
 session.add(new_config)
 
 user_data = [
-    ("admin", hashlib.md5("2241".encode('utf-8')).hexdigest(), "Administrator", ""),
-    ("goran", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Goran", "Jumic"),
-    ("pero", hashlib.md5("2310".encode('utf-8')).hexdigest(), "Pero", ""),
+    ("admin", hashlib.md5("admin1234".encode('utf-8')).hexdigest(), "Administrator", ""),
+    ("goran", hashlib.md5("goran1234".encode('utf-8')).hexdigest(), "Goran", "Jumic"),
+    ("pero", hashlib.md5("pero1234".encode('utf-8')).hexdigest(), "Pero", "Peric"),
 ]
 
 plant_data = [
