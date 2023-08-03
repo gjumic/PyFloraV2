@@ -5,7 +5,7 @@ This little piece of software was made as a "final paper" for the Algebra Python
 ## Howto and Features
 
 ### Running the application
-All the necessary software and exact versions are located in requirements.txt
+All the necessary modules and exact versions are located in requirements.txt
 
 If you are opening this project in a compatible IDE it will ask you to install modules automatically.
 
@@ -22,13 +22,13 @@ When you log in you will see the main welcome screen.
 
 You will see Location, Latitude, and Longitude information which is stored in the database.
 
-You can also see a graph with a daily forecast for your location based on Latitude and Longitude.
+You can also see a graph with a daily forecast for your location based on Latitude and Longitude. This information is fetched from online API.
 
 By changing these values in Admin Panel, graph data will change.
 
 Note that only the admin user can see and access Admin Panel
 ### Admin Panel and My Profile
-If you press on My Profile, you will be taken to the page where you can see and edit your information.
+If you press on My Profile, you will be taken to the page where you can see and edit your information. Only admin can change passwords.
 
 If you are logged in as admin and you access the admin panel you will see sections for application configuration and user administration.
 
@@ -48,7 +48,7 @@ There are multiple features of the Pots section.
 
 You create a new pot with a unique Name and Description, after creation, only the description can be edited.
 
-When Pot is created you can attach a plant to it. When attached Pot will assume a picture of the plant and 1 entry of the sensor measurement data will be generated.
+When Pot is created you can attach a plant to it. When attached, Pot will assume a picture of the plant and 1 entry of the sensor measurement data will be generated.
 
 You can also detach the Plant from the Pot, when you attach it again to some Plant, 1 new measurement entry will be created again for the Pot.
 
