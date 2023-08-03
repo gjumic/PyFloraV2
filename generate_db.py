@@ -44,8 +44,7 @@ pot_data = [
     ("Pot 7", "Wooden pot", 7),
     ("Pot 8", "Cement pot", 8),
     ("Pot 9", "Plastic pot", 9),
-    ("Pot 10", "test pot", 0),
-    ("Pot 11", "Terracotta pot", 10),
+    ("Pot 10", "Terracotta pot", 10),
 ]
 
 def generate_random_measurements(pot_id, start_date, num_measurements):
@@ -74,7 +73,6 @@ measurement_data = (
     generate_random_measurements(8, start_date, num_measurements_per_pot),
     generate_random_measurements(9, start_date, num_measurements_per_pot),
     generate_random_measurements(10, start_date, num_measurements_per_pot),
-    generate_random_measurements(11, start_date, num_measurements_per_pot)
 )
 
 for record in user_data:

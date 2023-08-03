@@ -15,13 +15,14 @@ class Create_Measurements():
         self.soil_ph = soil_ph
         self.soil_sal = soil_sal
 
-    def create_measurement(self):
-        new_pot = Measurements(date=self.date, pot_id=self.pot_id, temperature=self.temperature, light=self.light,
-                               soil_hum=self.soil_hum, soil_ph=self.soil_ph,
-                               soil_sal=0)
-
-        session.add(new_pot)
-        session.commit()
+    # def create_measurement(self):
+    #     print("Create Measurement where pot id: " + str(self.pot_id))
+    #     new_pot = Measurements(date=self.date, pot_id=self.pot_id, temperature=self.temperature, light=self.light,
+    #                            soil_hum=self.soil_hum, soil_ph=self.soil_ph,
+    #                            soil_sal=0)
+    #
+    #     session.add(new_pot)
+    #     session.commit()
 
     def delete_measurements(self):
         print("Delete Measurement where pot id: " + str(self.pot_id))

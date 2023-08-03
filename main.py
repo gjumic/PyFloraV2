@@ -286,7 +286,12 @@ def pots(id=None):
         put_html("<h2>" + pot.name + " - " + pot.description + "</h2>")
 
         image_path = constant_plants_image_dir + pot_image
-        img = open(image_path, 'rb').read()
+
+        if os.path.exists(image_path):
+            img = open(image_path, 'rb').read()
+        else:
+            img = open(constant_plants_image_dir + 'empty.png', 'rb').read()
+
 
         put_row([
             put_image(img, format="png").style("margin: 0 auto; display: block; margin-bottom: 20px;"),
@@ -396,6 +401,9 @@ def edit_pot_attach(id, plant_id=None):
         options['Empty'] = 0
         selected_name = select('Select a plant:', options=options)
         selected_id = options[selected_name]
+        b = Create_Measurements(None, id)
+        b.delete_measurements()
+        generate_measurement(id)
     else:
         selected_id = 0
     a = Update_Pot(id, None, None, selected_id, )
