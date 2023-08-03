@@ -453,7 +453,7 @@ def pots_buttons_callback(btn, pot_id, pot_name):
         generate_measurement(pot_id, True)
         body(pots, pot_id)
     elif btn == "Graphs":
-        plot_measurements(pot_id, "line")
+        plot_measurements(pot_id)
 
 
 def generate_measurement(pot_id, fix_pot=False):
@@ -674,7 +674,6 @@ def plot_temps(latitude, longitude, location):
         result.append({'time': time, 'type': 'Min', 'value': min_temp})
         result.append({'time': time, 'type': 'Max', 'value': max_temp})
 
-    # Initialize the plot
     line = Plot("Line")
     line.set_options({
         "title": "Daily Min and Max Temperatures",
@@ -682,7 +681,7 @@ def plot_temps(latitude, longitude, location):
         "data": result,
         "xField": "time",
         "yField": "value",
-        "seriesField": "type",  # Use 'type' field to distinguish between Min and Max temperatures
+        "seriesField": "type",
         "label": {},
         "smooth": True,
         "lineStyle": {
@@ -703,7 +702,7 @@ def plot_temps(latitude, longitude, location):
     put_html(line.render_notebook(), scope='main')
 
 
-def plot_measurements(pot_id, chart_type):
+def plot_measurements(pot_id):
     last_10_desc = session.query(Measurements).filter_by(pot_id=pot_id).order_by(desc(Measurements.id)).limit(
         10).subquery()
     last_10_asc = session.query(last_10_desc).order_by(asc(last_10_desc.c.id)).subquery()
@@ -772,7 +771,7 @@ def plot_measurements(pot_id, chart_type):
                 "lineWidth": 2,
             }
         },
-        "height": 400,  # Se
+        "height": 400,
     })
 
     chart2.set_options({
